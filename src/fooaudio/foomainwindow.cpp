@@ -4,6 +4,7 @@
 
 #include "fooabout.hpp"
 #include "foomainwindow.hpp"
+#include "foometadatamanager.hpp"
 #include "fooplaylistmanager.hpp"
 #include "fooplaylistwidget.hpp"
 #include "footrack.hpp"
@@ -696,7 +697,8 @@ void FooMainWindow::readSettings()
 			{
 				playlists.setArrayIndex(j);
 
-				FooTrack track(playlists.value("path").toString());
+				FooTrack track(QUrl(playlists.value("path").toString()));
+				FooMetaDataManager::instance()->addTrack(&track);
 				tracklist->append(track);
 			}
 			playlists.endArray();

@@ -3,7 +3,7 @@
 # #####################################################################
 QT += phonon
 TEMPLATE = app
-TARGET = 
+TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 DESTDIR = ../../bin
@@ -12,32 +12,34 @@ CONFIG += debug
 
 # Input
 HEADERS += abstractaudiointerface.h \
-    abstractaudioplugin.h \
-    fooabout.hpp \
-    foochangename.hpp \
-    foomainwindow.hpp \
-    fooplaylistwidget.hpp \
-    footabbar.hpp \
-    footabwidget.hpp \
-    footrack.hpp \
-    footracklist.hpp \
-    fooapplication.h \
-    tracklistmodel.hpp \
-    fooplaylistmanager.hpp \
-    foosettingsmanager.hpp
+	 abstractaudioplugin.h \
+	 fooabout.hpp \
+	 foochangename.hpp \
+	 foomainwindow.hpp \
+	 fooplaylistwidget.hpp \
+	 footabbar.hpp \
+	 footabwidget.hpp \
+	 footrack.hpp \
+	 footracklist.hpp \
+	 fooapplication.h \
+	 tracklistmodel.hpp \
+	 fooplaylistmanager.hpp \
+	 foosettingsmanager.hpp \
+	 foometadatamanager.hpp
 SOURCES += abstractaudioplugin.cpp \
-    fooabout.cpp \
-    fooaudio.cpp \
-    foochangename.cpp \
-    foomainwindow.cpp \
-    fooplaylistwidget.cpp \
-    footabbar.cpp \
-    footabwidget.cpp \
-    footracklist.cpp \
-    footrack.cpp \
-    fooapplication.cpp \
-    tracklistmodel.cpp \
-    fooplaylistmanager.cpp \
-    foosettingsmanager.cpp
+	 fooabout.cpp \
+	 fooaudio.cpp \
+	 foochangename.cpp \
+	 foomainwindow.cpp \
+	 fooplaylistwidget.cpp \
+	 footabbar.cpp \
+	 footabwidget.cpp \
+	 footracklist.cpp \
+	 footrack.cpp \
+	 fooapplication.cpp \
+	 tracklistmodel.cpp \
+	 fooplaylistmanager.cpp \
+	 foosettingsmanager.cpp \
+	 foometadatamanager.cpp
 include(logic/logic.pro)
 RESOURCES += resource.qrc
