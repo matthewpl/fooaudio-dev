@@ -696,7 +696,7 @@ void FooMainWindow::readSettings()
 			{
 				playlists.setArrayIndex(j);
 
-				FooTrack track(QUrl(playlists.value("path").toString()));
+				FooTrack track(playlists.value("path").toString());
 				tracklist->append(track);
 			}
 			playlists.endArray();
@@ -757,17 +757,21 @@ void FooMainWindow::addFiles ()
 	if (files.isEmpty())
 		return;
 
-	QList<QUrl> urls;
+	//QList<QUrl> urls;
+
+	FooTrackList *tracklist = FooPlaylistManager::instance()->currentPlaylist();
+	QList<FooTrack>* p = tracklist;
 	foreach (QString string, files)
 	{
-		urls.append(QUrl(string));
+		FooTrack track = FooTrack(QUrl(string));
+		p->append(track);
 	}
 
-	FooPlaylistWidget * wid = static_cast<FooPlaylistWidget *> (fooTabWidget->currentWidget());
+	/*FooPlaylistWidget * wid = static_cast<FooPlaylistWidget *> (fooTabWidget->currentWidget());
 	if (!wid)
 		return;
 
-	wid->addFiles(-1, urls, false);
+	wid->addFiles(-1, urls, false);*/
 }
 
 void FooMainWindow::addFolder ()

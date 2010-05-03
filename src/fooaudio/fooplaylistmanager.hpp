@@ -23,20 +23,20 @@ class FooTrackList;
 
 class FooPlaylistManager : public QObject
 {
-  
+
 	Q_OBJECT
 
 	static FooPlaylistManager *Instance;
 
 	QList<FooTrackList *> Playlists;
 	// one that played
-	FooTrackList * CurrentPlaylist;
+	FooTrackList *CurrentPlaylist;
 	int CurrentTruck;
 	// one that selected by tab
-	FooTrackList * CurrentlySelected;
+	FooTrackList *CurrentlySelected;
 
 	PlayOrder::PlayOrder Order;
-	
+
 	QList<QUrl> Queue;
 	QList<QUrl> PrevQueue;
 	int prevqueueindex;
@@ -76,7 +76,7 @@ public:
 	void removeFileFromQueue (QUrl file);
 	QList<QUrl> getQueue () {return Queue;}
 	void addToPrevQueue (QUrl path);
-	
+
 	QUrl randomTrack();
 
 signals:
