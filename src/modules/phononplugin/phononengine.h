@@ -27,49 +27,50 @@
 
 namespace FooAudio
 {
-	 class PhononEngine : public AbstractAudioPlugin
-	 {
-		  Q_OBJECT
+	class PhononEngine : public AbstractAudioPlugin
+	{
+		Q_OBJECT
 
-	 public:
-		  PhononEngine(QObject *parent = 0);
-		  ~PhononEngine();
+	public:
+		PhononEngine(QObject *parent = 0);
+		~PhononEngine();
 
-		  bool isPlaying();
-		  bool isStopped();
-		  bool isPaused();
-		  bool isMuted();
-		  void setMuted(bool);
+		bool isPlaying();
+		bool isStopped();
+		bool isPaused();
+		bool isMuted();
+		void setMuted(bool);
 
-		  qint64 totalTime() const;
-		  void seek(const qint64 time);
+		qint64 totalTime() const;
+		void seek(const qint64 time);
 
-		  QMultiMap<QString, QString> metaData(const QUrl url);
-		  QStringList metaData(const QString key, const QUrl url);
-		  QStringList mimeTypes();
+		//QMultiMap<QString, QString> metaData(const QUrl url);
+		void metaData(const QUrl url);
+		QStringList metaData(const QString key, const QUrl url);
+		QStringList mimeTypes();
 
-	 signals:
-		  void aboutToFinish();
-		  void progress(const qint64 time);
-		  void willPlayNow(const QUrl file);
-	void metaDataChanged(QMultiMap<QString, QString> newMetaData);
+	signals:
+		void aboutToFinish();
+		void progress(const qint64 time);
+		void willPlayNow(const QUrl file);
+		void metaDataChanged(QMultiMap<QString, QString> newMetaData, QUrl url);
 
-	 public slots:
-		  void stop();
-		  void play();
-		  void pause();
-		  void clearQueue();
-		  void enqueueNextFile(const QUrl file);
-		  void playFile(const QUrl file);
-		  void setVolume(const int volume);
+	public slots:
+		void stop();
+		void play();
+		void pause();
+		void clearQueue();
+		void enqueueNextFile(const QUrl file);
+		void playFile(const QUrl file);
+		void setVolume(const int volume);
 
-	 private slots:
-		  void newMetaData();
+	private slots:
+		void newMetaData();
 
-	 private:
-		  class PhononEnginePrivate;
-		  PhononEnginePrivate * d;
-	 };
+	private:
+		class PhononEnginePrivate;
+		PhononEnginePrivate * d;
+	};
 }
 
 #endif // PHONONENGINE_H__

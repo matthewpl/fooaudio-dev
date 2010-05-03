@@ -53,7 +53,7 @@ namespace FooAudio
 
 		connect(d->mediaObject, SIGNAL (tick(qint64)), this, SIGNAL (progress(qint64)));
 		connect(d->mediaObject, SIGNAL(aboutToFinish()), this, SIGNAL(aboutToFinish()));
-		connect(d->mediaObject, SIGNAL(metaDataChanged()), this, SLOT(newMetaData()));
+		connect(d->metaInformation, SIGNAL(metaDataChanged()), this, SLOT(newMetaData()));
 
 	}
 
@@ -157,10 +157,15 @@ namespace FooAudio
 		d->audioOutput->setVolume(v);
 	}
 
-	QMultiMap<QString, QString> PhononEngine::metaData(const QUrl url)
+	/*QMultiMap<QString, QString> PhononEngine::metaData(const QUrl url)
 	{
-		d->metaInformation->setCurrentSource(url);
+		d->metaInformation->setCurrentSource(url.toString());
 		return d->metaInformation->metaData();
+	}*/
+
+	void PhononEngine::metaData(const QUrl url)
+	{
+		d->metaInformation->setCurrentSource(url.toString());
 	}
 
 	QStringList PhononEngine::metaData(const QString key, const QUrl url)
@@ -176,7 +181,7 @@ namespace FooAudio
 
 	void PhononEngine::newMetaData()
 	{
-		emit metaDataChanged(d->mediaObject->metaData());
+		emit metaDataChanged(d->metaInformation->metaData(), d->metaInformation->currentSource().url());
 	}
 };
 

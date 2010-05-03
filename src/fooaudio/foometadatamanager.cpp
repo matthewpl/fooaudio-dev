@@ -82,10 +82,17 @@ void FooMetaDataManager::timeout()
 		return;
 	}
 
+	qDebug() << "dupa 1";
+
 	CurrentTrack = Tracks.first();
+
+	qDebug() << "dupa 2";
 
 	qDebug() << "FooMetaDataManager: " << CurrentTrack->file().toString();
 	QMultiMap<QString, QString> data = FooMainWindow::instance()->audioEngine()->metaData(CurrentTrack->file());
+
+	qDebug() << "dupa 2.1";
+
 	if (!data.isEmpty())
 	{
 		QString value;
@@ -117,6 +124,9 @@ void FooMetaDataManager::timeout()
 			// "DESCRIPTION"
 		}
 	}
+
+	qDebug() << "dupa 3";
+
 	deleteTrack(CurrentTrack);
 	CurrentTrack = 0;
 }

@@ -44,7 +44,8 @@ namespace FooAudio
 		virtual qint64 totalTime() const = 0;
 		virtual void seek(const qint64 time) = 0;
 
-		virtual QMultiMap<QString, QString> metaData(const QUrl) = 0;
+		//virtual QMultiMap<QString, QString> metaData(const QUrl) = 0;
+		virtual void metaData(const QUrl) = 0;
 		virtual QStringList metaData(const QString, const QUrl) = 0;
 		virtual QStringList mimeTypes() = 0;
 
@@ -52,7 +53,7 @@ namespace FooAudio
 		void aboutToFinish();
 		void progress(const qint64 time);
 		void willPlayNow(const QUrl file);
-		void metaDataChanged(QMultiMap<QString, QString> newMetaData);
+		void metaDataChanged(QMultiMap<QString, QString> newMetaData, QUrl url);
 
 	public slots:
 		virtual void stop() = 0;
