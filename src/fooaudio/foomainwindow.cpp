@@ -764,11 +764,14 @@ void FooMainWindow::addFiles ()
 	//QList<QUrl> urls;
 
 	FooTrackList *tracklist = FooPlaylistManager::instance()->currentPlaylist();
-	QList<FooTrack>* p = tracklist;
+//	QList<FooTrack>* p = tracklist;
 	foreach (QString string, files)
 	{
+		qDebug() << "test 4";
 		FooTrack track = FooTrack(QUrl(string));
-		p->append(track);
+		qDebug() << "test 5";
+		tracklist->append(track);
+		qDebug() << "test 6";
 	}
 
 	/*FooPlaylistWidget * wid = static_cast<FooPlaylistWidget *> (fooTabWidget->currentWidget());

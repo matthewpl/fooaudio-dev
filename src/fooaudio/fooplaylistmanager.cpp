@@ -35,10 +35,14 @@ void FooPlaylistManager::addPlaylist(FooTrackList *playlist)
 
 	Playlists.append(playlist);
 	emit playlistAdded(playlist);
-	
+
+	qDebug() << "test 2";
+
 	//set Current playlist as first added
 	if (CurrentPlaylist = 0)
 		CurrentPlaylist = playlist;
+
+	qDebug() << "test 3";
 }
 
 void FooPlaylistManager::deletePlaylist(int i)
@@ -65,11 +69,11 @@ void FooPlaylistManager::deletePlaylist(FooTrackList *playlist)
 	{
 		Playlists.removeAt(i);
 	}
-	
+
 	emit playlistRemoved(playlist);
 	delete playlist;
 	playlist = 0;
-	
+
 }
 
 void FooPlaylistManager::setCurrentPlaylist(FooTrackList* playlist)
@@ -98,8 +102,6 @@ QList<FooTrackList *> FooPlaylistManager::playlists()
 	return Playlists;
 }
 
-
-
 QUrl FooPlaylistManager::randomTrack()
 {
 	if (!CurrentPlaylist)
@@ -107,7 +109,7 @@ QUrl FooPlaylistManager::randomTrack()
 
 	int count = CurrentPlaylist->count();
 	int randomIndex = qrand() % count;
-	
+
 	//if (isCursorFollowsPlayback())
 	//	this->fooTabWidget->setCurrentItem(randomIndex);
 

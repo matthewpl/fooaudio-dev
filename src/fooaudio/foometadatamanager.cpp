@@ -17,7 +17,7 @@ FooMetaDataManager::FooMetaDataManager() : CurrentTrack(0)
 FooMetaDataManager::~FooMetaDataManager()
 {
 	Refresh->stop();
-	delete Refresh;
+//	delete Refresh;
 }
 
 void FooMetaDataManager::init()
@@ -44,6 +44,8 @@ void FooMetaDataManager::addTrack(FooTrack *track)
 
 	qDebug() << "FooMetaDataManager: ADD" << track->file();
 	Tracks.append(track);
+
+	qDebug() << "test 1";
 }
 
 void FooMetaDataManager::deleteTrack(FooTrack *track)
@@ -66,7 +68,7 @@ void FooMetaDataManager::clear()
 void FooMetaDataManager::timeout()
 {
 	qDebug() << "FooMetaDataManager: timeout()";
-	Refresh->start(500);
+	Refresh->start(50);
 
 	if (Tracks.isEmpty() || !FooMainWindow::instance()->audioEngine())
 		return;
@@ -87,6 +89,7 @@ void FooMetaDataManager::timeout()
 	if (!data.isEmpty())
 	{
 		// TODO: add some logic here
+		qDebug() << "Artysta: " << data.key("ARTIST");
 		CurrentTrack->setArtist(data.key("ARTIST"));
 		CurrentTrack->setAlbum(data.key("ARLBUM"));
 		CurrentTrack->setTitle(data.key("TITLE"));

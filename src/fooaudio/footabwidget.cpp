@@ -16,12 +16,12 @@ FooTabWidget::FooTabWidget (QWidget *parent) : QTabWidget (parent), m_newTabActi
 {
 	setElideMode(Qt::ElideRight);
 
+	setTabBar(m_tabBar);
+
 	connect(m_tabBar, SIGNAL(newTab()), this, SLOT(newTab()));
 	connect(m_tabBar, SIGNAL(cloneTab(int)), this, SLOT(cloneTab(int)));
 	connect(m_tabBar, SIGNAL(closeTab(int)), this, SLOT(closeTab(int)));
 	connect(m_tabBar, SIGNAL(closeOtherTabs(int)), this, SLOT(closeOtherTabs(int)));
-
-	setTabBar(m_tabBar);
 
 	setDocumentMode(true);
 
@@ -280,6 +280,8 @@ void FooTabWidget::currentPlaylistChanged(FooTrackList *playlist)
 {
 	if (!playlist)
 		return;
+
+	qDebug() << "currentPlaylistChanged: " << FooPlaylistManager::instance()->playlist(playlist);
 
 	setCurrentIndex(FooPlaylistManager::instance()->playlist(playlist));
 }
