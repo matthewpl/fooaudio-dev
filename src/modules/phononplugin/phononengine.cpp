@@ -1,11 +1,12 @@
-/*********************************************************************************
- * FooAudio
- * Copyright (C) 2009-2010  FooAudio Team
+/**********************************************************************
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,9 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-**********************************************************************************/
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
 
 #include "phononengine.h"
 
@@ -26,9 +27,14 @@
 #include <phonon/mediaobject.h>
 #include <phonon/backendcapabilities.h>
 
+#include "footrackinfo.hpp"
+
+#include <taglib/tag.h>
+#include <taglib/fileref.h>
+
 namespace FooAudio
 {
-	const int DEFAUL_INTERVAL   = 10;
+	const int DEFAUL_INTERVAL   = 250;
 
 	class PhononEngine::PhononEnginePrivate
 	{
@@ -38,8 +44,7 @@ namespace FooAudio
 		Phonon::MediaObject *metaInformation;
 	};
 
-	PhononEngine::PhononEngine(QObject * parent)
-		: AbstractAudioPlugin(parent)
+	PhononEngine::PhononEngine(QObject * parent) : AbstractAudioPlugin(parent)
 	{
 		d = new PhononEnginePrivate;
 
@@ -51,10 +56,11 @@ namespace FooAudio
 
 		d->mediaObject->setTickInterval(DEFAUL_INTERVAL);
 
-		connect(d->mediaObject, SIGNAL (tick(qint64)), this, SIGNAL (progress(qint64)));
+		connect(d->mediaObject, SIGNAL(tick(qint64)), this, SIGNAL (progress(qint64)));
 		connect(d->mediaObject, SIGNAL(aboutToFinish()), this, SIGNAL(aboutToFinish()));
+		connect(d->mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SIGNAL(changeTotalTime(qint64)));
 		connect(d->metaInformation, SIGNAL(metaDataChanged()), this, SLOT(newMetaData()));
-
+		connect(this, SIGNAL(seek(qint64)), d->mediaObject, SLOT(seek(qint64)));
 	}
 
 	PhononEngine::~PhononEngine()
@@ -88,16 +94,6 @@ namespace FooAudio
 		d->audioOutput->setMuted(mute);
 	}
 
-	qint64 PhononEngine::totalTime() const
-	{
-		return d->mediaObject->totalTime();
-	}
-
-	void PhononEngine::seek(const qint64 time)
-	{
-		d->mediaObject->seek(time);
-	}
-
 	void PhononEngine::stop()
 	{
 		d->mediaObject->stop();
@@ -128,6 +124,11 @@ namespace FooAudio
 			d->mediaObject->enqueue(file.toString());
 			emit willPlayNow(file);
 		}
+		else
+		{
+			d->mediaObject->stop();
+			d->mediaObject->clearQueue();
+		}
 	}
 
 	void PhononEngine::playFile(const QUrl file)
@@ -153,25 +154,63 @@ namespace FooAudio
 
 	void PhononEngine::setVolume(const int volume)
 	{
-		qreal v = volume / 100;
+		qreal v = qreal(volume) / 100;
 		d->audioOutput->setVolume(v);
 	}
 
-	/*QMultiMap<QString, QString> PhononEngine::metaData(const QUrl url)
+	void PhononEngine::seekTrack(qint64 t)
 	{
-		d->metaInformation->setCurrentSource(url.toString());
-		return d->metaInformation->metaData();
-	}*/
-
-	void PhononEngine::metaData(const QUrl url)
-	{
-		d->metaInformation->setCurrentSource(url.toString());
+		d->mediaObject->seek(t);
 	}
 
-	QStringList PhononEngine::metaData(const QString key, const QUrl url)
+	int PhononEngine::getVolume()
 	{
-		d->metaInformation->setCurrentSource(url);
-		return d->metaInformation->metaData(key);
+		return int(d->audioOutput->volume() * 100);
+	}
+
+	QMap<FooTrackInfo::FooTrackInfo, QString> PhononEngine::metaData(const QUrl url)
+	{
+		QMap<FooTrackInfo::FooTrackInfo, QString> meta;
+
+		TagLib::FileRef f(url.toString().toStdString().c_str());
+
+		if (!f.isNull())
+		{
+			QString trackNumber;
+			QString date;
+			QString channels;
+			QString sampleRate;
+			QString bitrate;
+			QString length;
+
+			trackNumber.setNum(f.tag()->track());
+			date.setNum(f.tag()->year());
+			channels.setNum(f.audioProperties()->channels());
+			sampleRate.setNum(f.audioProperties()->sampleRate());
+			bitrate.setNum(f.audioProperties()->bitrate());
+			length.setNum(f.audioProperties()->length());
+
+			meta.insert(FooTrackInfo::title, f.tag()->title().toCString(true));
+			meta.insert(FooTrackInfo::album, f.tag()->album().toCString(true));
+			meta.insert(FooTrackInfo::artist, f.tag()->artist().toCString(true));
+			meta.insert(FooTrackInfo::comment, f.tag()->comment().toCString(true));
+			meta.insert(FooTrackInfo::tracknumber, trackNumber);
+			meta.insert(FooTrackInfo::genre, f.tag()->genre().toCString(true));
+			meta.insert(FooTrackInfo::date, date);
+			meta.insert(FooTrackInfo::channels, channels);
+			meta.insert(FooTrackInfo::samplerate, sampleRate);
+			meta.insert(FooTrackInfo::bitrate, bitrate);
+			meta.insert(FooTrackInfo::length, length);
+		}
+
+		return meta;
+	}
+
+	QString PhononEngine::metaData(const FooTrackInfo::FooTrackInfo key, const QUrl url)
+	{
+		//d->metaInformation->setCurrentSource(url);
+		//return d->metaInformation->metaData(key);
+		return QString();
 	}
 
 	QStringList PhononEngine::mimeTypes()
@@ -181,7 +220,7 @@ namespace FooAudio
 
 	void PhononEngine::newMetaData()
 	{
-		emit metaDataChanged(d->metaInformation->metaData(), d->metaInformation->currentSource().url());
+		//		emit metaDataChanged(d->metaInformation->metaData(), d->metaInformation->currentSource().url());
 	}
 };
 

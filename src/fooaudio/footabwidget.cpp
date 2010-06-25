@@ -1,10 +1,28 @@
+/**********************************************************************
+ *
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
 
 #include "footabwidget.hpp"
 #include "footabbar.hpp"
 #include "fooplaylistmanager.hpp"
-#include "tracklistmodel.hpp"
 #include "fooplaylistwidget.hpp"
-#include "footracklist.hpp"
+#include "fooplaylistmodel.hpp"
 
 #include <QCompleter>
 #include <QEvent>
@@ -12,100 +30,83 @@
 
 #include <QtDebug>
 
-FooTabWidget::FooTabWidget (QWidget *parent) : QTabWidget (parent), m_newTabAction(0), m_closeTabAction(0), m_nextTabAction(0), m_previousTabAction(0), m_tabBar(new FooTabBar (this))
+FooTabWidget::FooTabWidget (FooPlaylistManager *playlistManager, QWidget *parent) : QTabWidget (parent)
 {
+	this->playlistManager = playlistManager;
+
 	setElideMode(Qt::ElideRight);
 
-	setTabBar(m_tabBar);
+	tabBar = new FooTabBar(this);
 
-	connect(m_tabBar, SIGNAL(newTab()), this, SLOT(newTab()));
-	connect(m_tabBar, SIGNAL(cloneTab(int)), this, SLOT(cloneTab(int)));
-	connect(m_tabBar, SIGNAL(closeTab(int)), this, SLOT(closeTab(int)));
-	connect(m_tabBar, SIGNAL(closeOtherTabs(int)), this, SLOT(closeOtherTabs(int)));
+	setTabBar(tabBar);
+
+	connect(tabBar, SIGNAL(newTab()), playlistManager, SLOT(createPlaylist()));
+	connect(playlistManager, SIGNAL(newPlaylistCreated(FooPlaylist *)), this, SLOT(createNewPlaylistWidget(FooPlaylist *)));
+	connect(playlistManager, SIGNAL(playlistRemoved(QString,QUuid)), this, SLOT(removePlaylistWidget(QString, QUuid)));
+	connect(this, SIGNAL(removePlaylist(QString,QUuid)), playlistManager, SLOT(removePlaylist(QString,QUuid)));
+	connect(this, SIGNAL(currentChanged(int)), this, SLOT(currentChanged(int)));
+
+	connect(tabBar, SIGNAL(cloneTab(int)), this, SLOT(cloneTab(int)));
+	connect(tabBar, SIGNAL(closeTab(int)), this, SLOT(closeTab(int)));
+	connect(tabBar, SIGNAL(closeOtherTabs(int)), this, SLOT(closeOtherTabs(int)));
 
 	setDocumentMode(true);
 
-	// Actions
-	m_newTabAction = new QAction(tr("New &Tab"), this);
-	connect(m_newTabAction, SIGNAL(triggered()), this, SLOT(newTab()));
+	tabBar->setTabsClosable(false);
+	tabBar->setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
 
-	m_closeTabAction = new QAction(tr("&Close Tab"), this);
-	connect(m_closeTabAction, SIGNAL(triggered()), this, SLOT(closeTab()));
-
-	m_nextTabAction = new QAction(tr("Show Next Tab"), this);
-	connect(m_nextTabAction, SIGNAL(triggered()), this, SLOT(nextTab()));
-
-	m_previousTabAction = new QAction(tr("Show Previous Tab"), this);
-	connect(m_previousTabAction, SIGNAL(triggered()), this, SLOT(previousTab()));
-
-	m_tabBar->setTabsClosable(false);
-	m_tabBar->setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
-
-
-	connect(FooPlaylistManager::instance(), SIGNAL(playlistAdded(FooTrackList*)),
-		this, SLOT(playlistAdded(FooTrackList*)));
-	connect(FooPlaylistManager::instance(), SIGNAL(playlistRemoved(FooTrackList*)),
-		this, SLOT(playlistRemoved(FooTrackList*)));
-	connect(FooPlaylistManager::instance(), SIGNAL(currentPlaylistChanged(FooTrackList*)),
-		this, SLOT(currentPlaylistChanged(FooTrackList*)));
-	connect(this, SIGNAL(currentChanged(int)),
-		FooPlaylistManager::instance(), SLOT(currentTabChanged(int)));
-
-}
-
-QAction *FooTabWidget::newTabAction() const
-{
-	return m_newTabAction;
-}
-
-QAction *FooTabWidget::closeTabAction() const
-{
-	return m_closeTabAction;
-}
-
-QAction *FooTabWidget::nextTabAction() const
-{
-	return m_nextTabAction;
-}
-
-QAction *FooTabWidget::previousTabAction() const
-{
-	return m_previousTabAction;
-}
-
-void FooTabWidget::newTab(QString name)
-{
-	FooTrackList *tracklist = new FooTrackList(name.isEmpty() ? "New Playlist" : name);
-
-	FooPlaylistManager::instance()->addPlaylist(tracklist);
-
-//	connect(fpw, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClicked(QModelIndex)));
+	for(int i = 0; i < playlistManager->getPlaylists()->size(); i++)
+	{
+		createNewPlaylistWidget(playlistManager->getPlaylists()->at(i));
+	}
 }
 
 void FooTabWidget::cloneTab(int index)
 {
 	QString newName = QString(tr("Copy of %1")).arg(tabText(index));
 	//FooPlaylistWidget *fpw = qobject_cast<FooPlaylistWidget *> (widget(index));
-	FooPlaylistWidget *fpwCopy = new FooPlaylistWidget ();
-	addTab (fpwCopy, newName);
+//	FooPlaylistWidget *fpwCopy = new FooPlaylistWidget ();
+//	addTab (fpwCopy, newName);
 
-	connect(fpwCopy, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClicked(QModelIndex)));
-
+//	connect(fpwCopy, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClicked(QModelIndex)));
 }
 
 void FooTabWidget::closeTab(int index)
 {
-	if (count() > 1)
-	{
-		QWidget* current = widget(index);
+	FooPlaylistWidget* playlist = static_cast<FooPlaylistWidget*>(widget(index));
 
-		if (FooPlaylistManager::instance()->currentPlaylistIndex() == index)
+	QString name = playlist->name();
+	QUuid uuid = playlist->uuid();
+
+	emit removePlaylist(name, uuid);
+}
+
+int FooTabWidget::playlistWidgetIndex(QString name, QUuid uuid) const
+{
+	int i;
+
+	for (i = 0; i < count(); ++i)
+	{
+		FooPlaylistWidget* playlist = static_cast<FooPlaylistWidget*>(widget(i));
+
+		if (playlist->name() == name && playlist->uuid() == uuid)
 		{
-			emit currentChanged(index - 1);
-			FooPlaylistManager::instance()->useSelectedPlaylist();
+			return i;
 		}
-		delete current;
-		FooPlaylistManager::instance()->deletePlaylist(index);
+	}
+
+	return -1;
+}
+
+void FooTabWidget::removePlaylistWidget(QString name, QUuid uuid)
+{
+	int i = playlistWidgetIndex(name, uuid);
+
+	if (i >= 0)
+	{
+		FooPlaylistWidget* playlist = static_cast<FooPlaylistWidget*>(widget(i));
+
+		delete playlist;
 	}
 }
 
@@ -218,7 +219,7 @@ void FooTabWidget::paste ()
 
 void FooTabWidget::clear ()
 {
-	FooPlaylistWidget * foo = static_cast<FooPlaylistWidget *> (currentWidget());
+	FooPlaylistWidget* foo = static_cast<FooPlaylistWidget*> (currentWidget());
 	if (!foo)
 		return;
 
@@ -227,61 +228,38 @@ void FooTabWidget::clear ()
 
 void FooTabWidget::selectAll ()
 {
-	FooPlaylistWidget * foo = static_cast<FooPlaylistWidget *> (currentWidget());
+	FooPlaylistWidget* foo = static_cast<FooPlaylistWidget*> (currentWidget());
 	if (!foo)
 		return;
 
 // 	foo->selectAll ();
 }
 
-void FooTabWidget::setCurrentPlaylist(int index)
+void FooTabWidget::createNewPlaylistWidget(FooPlaylist *playlist)
 {
-	qDebug() << "TabWidget: playlista :" << index;
-// 	currentPlayingPlaylist = static_cast<FooPlaylistWidget *> (widget(index));
-// 	setCurrentIndex(index);
+	FooPlaylistWidget *playlistWidget = new FooPlaylistWidget(playlist->name(), playlist->uuid(), this);
+
+	connect(playlistWidget, SIGNAL(doubleClicked(QModelIndex)), playlist, SLOT(play(QModelIndex)));
+	connect(playlistWidget, SIGNAL(play(QModelIndex)), playlist, SLOT(play(QModelIndex)));
+	connect(playlistWidget, SIGNAL(remove(QModelIndexList)), playlist, SLOT(remove(QModelIndexList)));
+	connect(playlistWidget, SIGNAL(currentChanged()), playlist, SLOT(currentChanged()));
+
+	FooPlaylistModel *model = new FooPlaylistModel(playlist, this);
+
+	connect(playlist, SIGNAL(addedTracks(int)), model, SLOT(addTracks(int)));
+	connect(playlist, SIGNAL(removedTrack(int)), model, SLOT(removeTrack(int)));
+	connect(playlist, SIGNAL(headersChanged()), model, SLOT(headersChanged()));
+	connect(playlist, SIGNAL(metaChanged(int)), model, SLOT(rowChanged(int)));
+
+	playlistWidget->setModel(model);
+
+	addTab(playlistWidget, playlist->name());
 }
 
-int FooTabWidget::getCurrentPlaylistIndex()
+void FooTabWidget::currentChanged(int index)
 {
-// 	qDebug() << "TabWidget: playlista :" << indexOf(currentPlayingPlaylist);
-// 	return indexOf(currentPlayingPlaylist);
-}
-
-void FooTabWidget::setCurrentItem(int index)
-{
-//	qDebug() << "TabWidget: utwor :" << index;
-//	currentPlayingItem = currentPlayingPlaylist->topLevelItem(index);
-// 	currentPlayingPlaylist->setCurrentItem(currentPlayingItem);
-}
-
-int FooTabWidget::getCurrentItemIndex()
-{
-// 	qDebug() << "TabWidget: utwor :" << currentPlayingPlaylist->indexOfTopLevelItem(currentPlayingItem);
-// 	return currentPlayingPlaylist->indexOfTopLevelItem(currentPlayingItem);
-}
-
-void FooTabWidget::playlistAdded(FooTrackList *playlist)
-{
-	qDebug() << "TabWidget: playlista :" << playlist->name();
-
-	FooPlaylistWidget *fpw = new FooPlaylistWidget (this);
-	fpw->setModel(new TrackListModel(playlist, this));
-	addTab (fpw, (playlist->name()));
-
-	connect(fpw, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClicked(QModelIndex)));
-
-}
-
-void FooTabWidget::playlistRemoved(FooTrackList *playlist)
-{
-}
-
-void FooTabWidget::currentPlaylistChanged(FooTrackList *playlist)
-{
-	if (!playlist)
-		return;
-
-	qDebug() << "currentPlaylistChanged: " << FooPlaylistManager::instance()->playlist(playlist);
-
-	setCurrentIndex(FooPlaylistManager::instance()->playlist(playlist));
+	if (FooPlaylistWidget* playlistWidget = (FooPlaylistWidget*)widget(index))
+	{
+		playlistWidget->changeToCurrent();
+	}
 }

@@ -38,10 +38,9 @@ Module.symvers
 Makefile
 moc_*.cpp
 qrc_*.cpp
-fooaudio
 lib
 bin
-*.pro..user
+*.pro.user
 
 # stgit generated dirs
 patches-*
@@ -56,8 +55,7 @@ ncscope.*
 
 *.orig
 *~
-\#*#
 
 # build dir
 build
-fooaudio.pro.user
+

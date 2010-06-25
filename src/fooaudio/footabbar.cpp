@@ -1,3 +1,23 @@
+/**********************************************************************
+ *
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
+
 #include "footabbar.hpp"
 #include "foochangename.hpp"
 
@@ -26,44 +46,43 @@ FooTabBar::FooTabBar (QWidget *parent) : QTabBar (parent), m_showTabBarWhenOneTa
 
 void FooTabBar::contextMenuRequested (const QPoint &position)
 {
+	/*
+	 Renane Playlist
+	 Remove Playlist
+	 Add New Playlist
+	 ---
+	 Move Left
+	 Move Right
+	 ---
+	 Save All Playlists...
+	 Save Playlist...
+	 Load Playlist...
+	 ---
+	 "<playlist-name>" Contents > -- odpuścić na razie
+	 */
 	QMenu menu;
-	menu.addAction (tr ("New &Tab"), this, SIGNAL (newTab ()), QKeySequence::AddTab);
+	menu.addAction(tr("New Playlist..."), this, SIGNAL(newTab()), QKeySequence::New);
 
 	int index = tabAt(position);
 
 	if (-1 != index)
 	{
-		QAction *action = menu.addAction (tr ("DuplicateTab"), this, SLOT (cloneTab ()));
-		action->setData (index);
+		menu.addAction(tr("&Duplicate Playlist"), this, SLOT(cloneTab()))->setData(index);
 
-		menu.addSeparator ();
+		menu.addSeparator();
 
-		action = menu.addAction (tr ("&Close Tab"), this, SLOT (closeTab ()), QKeySequence::Close);
-		action->setData (index);
+		menu.addAction(tr("&Close Playlist"), this, SLOT(closeTab()), QKeySequence::Close)->setData(index);
 
-		menu.addSeparator ();
+		menu.addSeparator();
 
-		action = menu.addAction (tr ("&Close Other Tabs"), this, SLOT (closeOtherTabs()), QKeySequence::Close);
-		action->setData (index);
+		menu.addAction (tr ("Close &Other Playlists"), this, SLOT (closeOtherTabs()))->setData(index);
 
-		menu.addSeparator ();
+		menu.addSeparator();
 
-		action = menu.addAction (tr ("&Rename Tab"), this, SLOT (renameTab ()));
-		action->setData (index);
-
-		menu.addSeparator ();
-
-		action->setData (index);
-
-		menu.addSeparator ();
-
-	}
-	else
-	{
-		menu.addSeparator ();
+		menu.addAction (tr ("&Rename Playlist"), this, SLOT(renameTab()))->setData(index);
 	}
 
-	menu.exec (QCursor::pos ());
+	menu.exec (QCursor::pos());
 }
 
 void FooTabBar::cloneTab ()
@@ -77,11 +96,10 @@ void FooTabBar::cloneTab ()
 
 void FooTabBar::closeTab()
 {
-	if (QAction *action = qobject_cast<QAction *> (sender ()))
+	if (QAction *action = qobject_cast<QAction *>(sender ()))
 	{
-		qDebug() << "FooTabBar::closeTab";
 		int index = action->data().toInt();
-		emit closeTab (index);
+		emit closeTab(index);
 	}
 }
 
@@ -96,7 +114,7 @@ void FooTabBar::closeOtherTabs()
 
 void FooTabBar::renameTab ()
 {
-	if (QAction *action = qobject_cast<QAction *> (sender ()))
+	if (QAction *action = qobject_cast<QAction *>(sender ()))
 	{
 		int index = action->data().toInt();
 		FooChangeName *fooChangeName = new FooChangeName(index, this);

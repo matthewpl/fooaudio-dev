@@ -1,11 +1,12 @@
-/*********************************************************************************
- * FooAudio
- * Copyright (C) 2009  Dariusz Mikulski <dariusz.mikulski@gmail.com>
+/**********************************************************************
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,43 +14,41 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-**********************************************************************************/
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
 
 #include "fooapplication.h"
 #include "foomainwindow.hpp"
-#include "foometadatamanager.hpp"
-#include "logic/applicationlogic.h"
 #include "abstractaudioplugin.h"
 #include "abstractaudiointerface.h"
 
 #include <QPluginLoader>
-#include <QtDebug>
 #include <QFileInfo>
-//#include <QtTest/QtTest>
 
-FooApplication::FooApplication()
+FooApplication::FooApplication(QObject *parent) : QObject(parent)
 {
-	InitializeLogic();
 }
 
 FooApplication::~FooApplication()
 {
-	delete m_application;
+	delete qApplication;
 }
 
 int FooApplication::start(int argc, char *argv[])
 {
-	m_application = new QApplication(argc, argv);
+	qApplication = new QApplication(argc, argv);
 
-	QObject::connect(m_application, SIGNAL(aboutToQuit()), this, SLOT(quitApp()));
+	//QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, QDir::homePath() + "/.fooaudio/");
 
-	QTextCodec::setCodecForCStrings (QTextCodec::codecForName ("UTF-8"));
-	m_application->setApplicationName("fooaudio");
-	m_application->setQuitOnLastWindowClosed(true);
 
-//	FooPhononAudioEngine *fooAudioEngine = new FooPhononAudioEngine(m_application);
+	QObject::connect(qApplication, SIGNAL(aboutToQuit()), this, SLOT(quitApp()));
+
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+	QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+	qApplication->setApplicationName("fooaudio");
+	qApplication->setQuitOnLastWindowClosed(true);
 
 	QFileInfo pluginPath("../lib/libphononplugin.so");
 	QPluginLoader loader(pluginPath.absoluteFilePath());
@@ -62,7 +61,6 @@ int FooApplication::start(int argc, char *argv[])
 		msgBox.setText(tr("Can't find Audio Plugin."));
 		return msgBox.exec();
 	}
-//	QVERIFY(p != NULL);
 	else
 	{
 		FooAudio::AbstractAudioInterface *aai = qobject_cast<FooAudio::AbstractAudioInterface*>(p);
@@ -72,25 +70,18 @@ int FooApplication::start(int argc, char *argv[])
 			msgBox.setText(tr("Can't cast to AbstractAudioInterface!."));
 			return msgBox.exec();
 		}
-		FooAudio::AbstractAudioPlugin *plugin = aai->GetAudioPlugin();
 
-		FooMainWindow *fooMainWindow = FooMainWindow::instance();
-		fooMainWindow->setAudioEngine(plugin);
-		fooMainWindow->show();
+		engine = aai->GetAudioPlugin();
+		playlistManager = new FooPlaylistManager(engine);
+		playerManager = new FooPlayerManager(playlistManager, engine);
+		mainWindow = new FooMainWindow(playlistManager, playerManager);
 
-		FooMetaDataManager::instance();
+		mainWindow->show();
 
-		return m_application->exec();
+		return qApplication->exec();
 	}
 }
 
 void FooApplication::quitApp()
 {
-	ApplicationLogic::Release();
 }
-
-void FooApplication::InitializeLogic()
-{
-	ApplicationLogic::getInstance()->start();
-}
-

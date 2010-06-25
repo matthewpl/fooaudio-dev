@@ -1,10 +1,34 @@
+/**********************************************************************
+ *
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
+
 #ifndef _FOOMAINWINDOW_HPP_
 #define _FOOMAINWINDOW_HPP_
 
 #include <QtGui>
 #include <QUrl>
 #include "footabwidget.hpp"
-#include "abstractaudioplugin.h"
+#include "fooplaylistmanager.hpp"
+#include "fooplayermanager.hpp"
+#include "foosettingsmanager.hpp"
+#include "fooslider.hpp"
+#include "fooplaybackorder.hpp"
 
 class	QSystemTrayIcon;
 
@@ -13,131 +37,91 @@ class	FooPhononAudioEngine;
 class	FooMainWindow : public QMainWindow
 {
 	Q_OBJECT
-	Q_DISABLE_COPY(FooMainWindow)
-
-	static FooMainWindow *Instance;
-
-	FooMainWindow ();
-	void init();
 
 public:
-	~FooMainWindow ();
-
-	static FooMainWindow * instance();
-
-	void setAudioEngine(FooAudio::AbstractAudioPlugin * engine);
-	FooAudio::AbstractAudioPlugin * audioEngine() {return fooAudioEngine;}
-
-	FooTabWidget *fooTabWidget;
-
-	QSlider *trackSlider;
-	QSlider *volumeSlider;
+	FooMainWindow(FooPlaylistManager *playlistManager, FooPlayerManager *playerManager);
+	~FooMainWindow();
 
 	int getMaxProgress();
 
-	void readSettings();
-	void writeSettings();
-
 	bool isCursorFollowsPlayback();
 
-	QUrl getNextFile();
+	void readSettings();
 
 signals:
-	void playSignal();
-	void prevSignal(QUrl);
-	void stopSignal();
-	void nextSignal(QUrl);
-	void randomSignal(QUrl);
-	void pauseSignal();
-	void enqueueNextFile(QUrl);
-
-public slots:
-	void enqueueNextFile();
+	void changePlaybackOrder(FooPlaybackOrder::FooPlaybackOrder);
 
 private slots:
-	void open ();
-	void openAudioCD ();
-	void addFiles ();
-	void addFolder ();
-	void addLocation ();
-	void newPlaylist ();
-	void loadPlaylist ();
-	void savePlaylist ();
-	void preferences ();
-	void exit ();
+	void saveSettings();
+	void mute(bool m);
 
-	void undo ();
-	void redo ();
-	void sortBy ();
-	void randomize ();
-	void reverse ();
-	void sortByFilePatch ();
-	void sortByAlbum ();
-	void sortByTrackNumber ();
-	void sortByTitle ();
-	void search ();
-	void removeDuplicates ();
-	void removeDeadItems ();
+	void open();
+	void openAudioCD();
+	void addFiles();
+	void addFolder();
+	void addLocation();
+	void loadPlaylist();
+	void savePlaylist();
+	void exit();
 
-	void alwaysOnTop ();
-	void console ();
-	void equalizer ();
-	void playlistManager ();
-	void quickSetup ();
-	void enableLayoutEditionMode ();
-	void createScratchbox ();
+	void undo();
+	void redo();
+	void sortBy();
+	void randomize();
+	void reverse();
+	void sortByFilePatch();
+	void sortByAlbum();
+	void sortByTrackNumber();
+	void sortByTitle();
+	void search();
+	void removeDuplicates();
+	void removeDeadItems();
 
-	void mute ();
-	void stop ();
-	void pause ();
-	void play ();
-	void previous ();
-	void next ();
-	void random ();
-	void defaultOrder ();
-	void repeatPlaylist ();
-	void repeatTrack ();
-	void randomOrder ();
-	void shuffleTracks ();
-	void shuffleAlbums ();
-	void shuffleFolders ();
-	void stopAfterCurrent ();
-	void playbackFollowsCursor ();
-	void cursorFollowsPlayback ();
+	void alwaysOnTop();
+	void console();
+	void equalizer();
+	void playlistManagerView();
+	void quickSetup();
+	void enableLayoutEditionMode();
+	void createScratchbox();
 
-	void albumList ();
-	void searchAlbum ();
-	void configure ();
+	void defaultOrder();
+	void repeatPlaylistOrder();
+	void repeatTrackOrder();
+	void randomOrder();
+	void shuffleTracksOrder();
+	void shuffleAlbumsOrder();
+	void shuffleFoldersOrder();
+	void stopAfterCurrent();
+	void playbackFollowsCursor();
+	void cursorFollowsPlayback();
+
+	void albumList();
+	void searchAlbum();
+	void configure();
 	void uncheckAllOrders();
-	void about ();
+	void about();
 
 	void cutLayout();
 	void copyLayout();
 	void pasteLayout();
 
-	// Queue
-	void addToQueue ();
-	void removeFromQueue();
-	void clearQueue ();
-
-	void itemDoubleClicked(QTreeWidgetItem *, int column);
-
-	// progress slider
-	void progress (qint64 time);
-	void seek (int value);
-	// volume slider
-	void sliderReleased ();
-
 	void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
-	void setTrayIcon ();
+	void setTrayIcon();
 
 	// update window title according to new meta data
 	void updateWindowTitle(QMultiMap<QString, QString> newMetaData);
 
 private:
-	const int maxProgress;
-	FooAudio::AbstractAudioPlugin *fooAudioEngine;
+	FooPlaylistManager *playlistManager;
+	FooPlayerManager *playerManager;
+
 	QSize *iconSize;
+
+	FooTabWidget *fooTabWidget;
+
+	FooSlider *trackSlider;
+	FooSlider *volumeSlider;
 
 	QSystemTrayIcon *trayIcon;
 
@@ -156,21 +140,17 @@ private:
 	QMenu *editMenu;
 	QAction *undoAction;
 	QAction *redoAction;
-	QAction *cutAction;
-	QAction *copyAction;
-	QAction *pasteAction;
-	QAction *removeAction;
 	QAction *clearAction;
 	QAction *selectAllAction;
-	QMenu *queueMenu;
-	QAction *addToQueueAction;
-	QAction *removeFromQueueAction;
-	QAction *clearQueueAction;
+	QMenu *selectionMenu;
+	QAction *removeAction;
+	QAction *cropAction;
 	QMenu *sortMenu;
 	QAction *sortByAction;
 	QAction *randomizeAction;
 	QAction *reverseAction;
 	QAction *sortByFilePatchAction;
+	QAction *sortByArtisAction;
 	QAction *sortByAlbumAction;
 	QAction *sortByTrackNumberAction;
 	QAction *sortByTitleAction;
@@ -196,17 +176,17 @@ private:
 	QAction *stopAction;
 	QAction *pauseAction;
 	QAction *playAction;
-	QAction *previousAction;
+	QAction *prevAction;
 	QAction *nextAction;
 	QAction *randomAction;
 	QMenu *orderMenu;
 	QAction *defaultOrderAction;
-	QAction *repeatPlaylistAction;
-	QAction *repeatTrackAction;
+	QAction *repeatPlaylistOrderAction;
+	QAction *repeatTrackOrderAction;
 	QAction *randomOrderAction;
-	QAction *shuffleTracksAction;
-	QAction *shuffleAlbumsAction;
-	QAction *shuffleFoldersAction;
+	QAction *shuffleTracksOrderAction;
+	QAction *shuffleAlbumsOrderAction;
+	QAction *shuffleFoldersOrderAction;
 	QAction *stopAfterCurrentAction;
 	QAction *playbackFollowsCursorAction;
 	QAction *cursorFollowsPlaybackAction;
@@ -216,8 +196,8 @@ private:
 	QAction *searchAlbumAction;
 	QAction *configureAction;
 
-	QMenu *settingsMenu;
-	QAction *trayIconAction;
+//	QMenu *settingsMenu;
+//	QAction *trayIconAction;
 
 	QMenu *helpMenu;
 	QAction *aboutAction;
@@ -225,19 +205,19 @@ private:
 
 	QMenu *trayMenu;
 
-	QAction *volumeToolBarAction;
-	QAction *stopToolBarAction;
-	QAction *playToolBarAction;
-	QAction *pauseToolBarAction;
-	QAction *prevToolBarAction;
-	QAction *nextToolBarAction;
-	QAction *randomToolBarAction;
+	/*QAction *cutAction;
+	QAction *copyAction;
+	QAction *pasteAction;
+	QMenu *queueMenu;
+	QAction *addToQueueAction;
+	QAction *removeFromQueueAction;
+	QAction *clearQueueAction;*/
+
+	QAction *volumeAction;
 
 	QToolBar *trackToolBar;
 	QToolBar *playbackToolBar;
 	QToolBar *volumeToolBar;
-
-	int slider_pos;
 
 	void createMenus();
 	void createToolBars();
@@ -245,9 +225,9 @@ private:
 	void createStatusBar();
 	void createSystrayIcon();
 
+	void playbackOrderChanged(FooPlaybackOrder::FooPlaybackOrder);
+
 protected:
-	void savePlaylistToPls(QString filePath);
-	void savePlaylistToM3u(QString filePath);
 	void closeEvent(QCloseEvent *);
 };
 

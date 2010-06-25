@@ -1,3 +1,23 @@
+/**********************************************************************
+ *
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
+
 #include <QLabel>
 #include <QStringList>
 #include <QtGui>
@@ -7,13 +27,16 @@
 #include "foomainwindow.hpp"
 #include "fooplaylistwidget.hpp"
 
-FooPlaylistWidget::FooPlaylistWidget (QWidget *parent) : QTreeView(parent)
+FooPlaylistWidget::FooPlaylistWidget(const QString& name, const QUuid& uuid, QWidget *parent) : QTreeView(parent)
 {
+	playlistName = name;
+	playlistUuid = uuid;
+
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 	setSortingEnabled(false);
 	setIndentation(0);
-	setAlternatingRowColors (true);
+	setAlternatingRowColors(true);
 	// For drag and drop files, QAbstractItemView::DragDrop doesn't work (why?)
 	setAcceptDrops(true);
 	setDragDropMode(QAbstractItemView::InternalMove);
@@ -21,14 +44,16 @@ FooPlaylistWidget::FooPlaylistWidget (QWidget *parent) : QTreeView(parent)
 	viewport()->setAcceptDrops(true);
 	setDropIndicatorShown(true);
 	// Context Menu
-	setContextMenuPolicy(Qt::DefaultContextMenu);
+	setContextMenuPolicy(Qt::CustomContextMenu);
 	setItemsExpandable(false);
 	setRootIsDecorated(false);
+
+	connect(this, SIGNAL (customContextMenuRequested (const QPoint &)), this, SLOT (contextMenuRequested (const QPoint &)));
 
 // 	QStringList l;
 // 	l << tr("File");
 // 	setHeaderLabels(l);
-// 
+//
 // 	// TODO Remove and add something normal
 // 	Filters << ".mp3"  << ".wma" << ".mp4" << ".mpg" << ".mpeg" << ".m4a";
 // 	Filters << ".flac" << ".ogg" << ".wav" << ".3gp" << ".ac3" << ".aac";
@@ -36,146 +61,113 @@ FooPlaylistWidget::FooPlaylistWidget (QWidget *parent) : QTreeView(parent)
 	// TODO .m3u .m4u
 }
 
-void FooPlaylistWidget::contextMenuEvent ( QContextMenuEvent * event )
+QString FooPlaylistWidget::name() const
 {
-	FooMainWindow *mainWindow = FooMainWindow::instance();
+	return playlistName;
+}
 
-	if (!mainWindow)
-	{
-		return;
-	}
+QUuid FooPlaylistWidget::uuid() const
+{
+	return playlistUuid;
+}
+
+void FooPlaylistWidget::contextMenuRequested (const QPoint &position)
+{
+	/*
+	 Play
+	 ---
+	 Remove (Del)
+	 Crop
+	 ---
+	 Cut (Ctrl+X)
+	 Copy (Ctrl+C)
+	 Paste (Ctrl+V) -- przed aktualnie zaznaczonym - nie zawsze widoczne
+	 ---
+	 Add to Playback Queue
+	 Remove from Playback Queue -- nie zawsze widoczne
+	 Properties (Alt+Enter)
+	 */
 
 	QMenu menu;
-	QAction *action;
 
-/*	QTreeWidgetItem * item = itemAt (event->pos());*/
-	int index/* = indexOfTopLevelItem(item)*/;
-	int countSelectedItems/* = selectedItems().count()*/;
+	QModelIndexList index = selectedIndexes();
+/*	QList<int> l;
 
-	// TODO implement actions
-
-	if (-1 != index)
+	for (int i = 0; i < index.size(); i++)
 	{
-		action = menu.addAction (tr ("Play"), mainWindow, SLOT (play ()));
-		action->setData (index);
-
-		menu.addSeparator ();
-
-		action = menu.addAction (tr ("Stop after this file"), mainWindow, SLOT (play ()));
-		action->setData (index);
-
-		menu.addSeparator ();
-
-		action = menu.addAction (tr ("&Add To Queue"), mainWindow, SLOT (addToQueue())/*, QKeySequence::Close*/);
-		action->setData (index);
-
-		// condition
-		action = menu.addAction (tr ("&Remove from Queue"), mainWindow, SLOT (removeFromQueue ()));
-		action->setData (index);
-
-		menu.addSeparator ();
-
-		action = menu.addAction (tr ("&Remove"), mainWindow, SLOT (removeFromQueue ()));
-		action->setData (index);
-
-		menu.addSeparator ();
-
-		action = menu.addAction (tr ("&Copy to Playlist"), mainWindow, SLOT (removeFromQueue ()));
-		action->setData (index);
-
-		action = menu.addAction (tr ("&Move to Playlist"), mainWindow, SLOT (removeFromQueue ()));
-		action->setData (index);
-
-		menu.addSeparator ();
+		QVariant v(index.at(i).row());
+		l.append(v);
 	}
-	else
+*/
+	if (index.size())
 	{
-		menu.addSeparator ();
+		menu.addAction(tr("Play"), this, SLOT(play()));//->setData(l);
+
+		menu.addSeparator();
+
+		menu.addAction(tr("Remove"), this, SLOT(remove()));//->setData(l);
+		menu.addAction(tr("Crop"), this, SLOT(crop()));//->setData(l);
+
+		menu.addSeparator();
+
+		menu.addAction(tr("Cut"), this, SLOT(cut()), QKeySequence::Cut);//->setData(index);
+		menu.addAction(tr("Copy"), this, SLOT(copy()), QKeySequence::Copy);//->setData(index);
+		menu.addAction(tr("Paste"), this, SLOT(paste()), QKeySequence::Paste);//->setData(index);
+
+		menu.addSeparator();
+
+		menu.addAction(tr("Add to Playback Queue"), this, SLOT(addToPlaybackQueue()));//->setData(index);
+		menu.addAction(tr("Remove from Playback Queue"), this, SLOT(removeFromPlaybackQueue()));//->setData(index);
+		menu.addAction(tr("Properties"), this, SLOT(properties()), Qt::ALT + Qt::Key_Enter);//->setData(index);
 	}
 
-	menu.exec (QCursor::pos ());
+	menu.exec(QCursor::pos());
 }
 
-void FooPlaylistWidget::addFile (const QString &file, int index)
+void FooPlaylistWidget::play()
 {
-	// if it's network uri
-	QUrl adress(file);
-
-	foreach (const QString &filter, Filters)
-	{
-		if (file.endsWith (filter, Qt::CaseInsensitive) || (!adress.scheme().isEmpty() && !adress.host().isEmpty()))
-		{
-/*			QTreeWidgetItem *wid = new QTreeWidgetItem (this);
-
-			wid->setText(0, file);
-			insertTopLevelItem (index == -1 ? topLevelItemCount() : index, wid);*/
-			return;
-		}
-	}
+	emit play(selectionModel()->selectedRows().at(0));
 }
 
-int FooPlaylistWidget::plistFindFname (const char *fname)
+void FooPlaylistWidget::remove()
 {
-	qDebug() << "FooPlaylistWidget::plistFindFname";
-// 	for (int i = 0; i < topLevelItemCount(); i++)
-// 	{
-// 		QTreeWidgetItem *wid = topLevelItem(i);
-// 
-// 		if (wid->text(0) == fname)
-// 		{
-// 			return i;
-// 			break;
-// 		}
-// 	}
-	return -1;
+	emit remove(selectionModel()->selectedRows());
 }
 
-QString FooPlaylistWidget::plistGetFile(int i)
+void FooPlaylistWidget::crop()
 {
-// 	QTreeWidgetItem *item = this->topLevelItem(i);
-// 	if (!item)
-// 		return QString();
-// 
-// 	return item->text(0);
-return QString();
+
 }
 
-int FooPlaylistWidget::plistCount()
+void FooPlaylistWidget::cut()
 {
-	return 0 /*topLevelItemCount ()*/;
+
 }
 
-int FooPlaylistWidget::plistNext(int i)
+void FooPlaylistWidget::copy()
 {
-	// TODO this not support repeat etc. and it is not used?
-	return (/*topLevelItemCount()*/0  == i) ? 0 : ++i;
+
 }
 
-QUrl FooPlaylistWidget::file(int i)
+void FooPlaylistWidget::paste()
 {
-	qDebug() << "FooPlaylistWidget::file";
-// 	qDebug() << this->topLevelItemCount();
-	qDebug() << i;
-// 	QTreeWidgetItem *item = this->topLevelItem(i);
-// 
-// 	if (!item)
-// 	{
-// 		return QUrl();
-// 	}
 
-	return QUrl(/*item->text(0)*/);
 }
 
-//QList<QTreeWidgetItem *> FooPlaylistWidget::itemsList()
-//{
-//	QList<QTreeWidgetItem *> list;
-// 	for (quint64 i=0, size=topLevelItemCount();i<size;i++)
-// 	{
-// 		list.append(topLevelItem(i));
-// 	}
+void FooPlaylistWidget::addToPlaybackQueue()
+{
 
-//	return list;
-//}
+}
+
+void FooPlaylistWidget::removeFromPlaybackQueue()
+{
+
+}
+
+void FooPlaylistWidget::properties()
+{
+
+}
 
 void FooPlaylistWidget::dragEnterEvent(QDragEnterEvent * event)
 {
@@ -196,43 +188,13 @@ void FooPlaylistWidget::dropEvent(QDropEvent * event)
 		if ( urlList.size() > 0)
 		{
 			int index /*= indexOfTopLevelItem(itemAt (event->pos()))*/;
-			addFiles(index, urlList, true);
 		}
 	}
 
 	event->acceptProposedAction();
 }
 
-void FooPlaylistWidget::addFiles(int index, QList<QUrl> list, bool recursive)
+void FooPlaylistWidget::changeToCurrent()
 {
-	// TODO: check if files are supported by engine
-	QFileInfo info;
-	QString path;
-
-	foreach (QUrl file, list)
-	{
-		// toLocalPath() have problems with spaces in file/dir names - it just cut rest
-		path = file.toString();
-		info.setFile(path);
-
-		if (info.isFile())
-		{
-			qDebug() << "FooPlaylistWidget:: addFiles at " << index;
-			addFile(path, index);
-		}
-		else if (info.isDir() && recursive)
-		{
-			qDebug() << "FooPlaylistWidget:: addDir at " << index;
-			QDir directory(path);
-			QList<QUrl> urls;
-
-			// add all files and dirs to list of urls
-			foreach( QString fileInDirectory, directory.entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable))
-			{
-				urls.append(QUrl(directory.filePath(fileInDirectory)));
-			}
-			// launch this metod one more time to add files and scan subdirs if recursive
-			addFiles(index, urls, recursive);
-		}
-	}
+	emit currentChanged();
 }

@@ -1,91 +1,77 @@
+/**********************************************************************
+ *
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
+
 #ifndef FOOPLAYLISTMANAGER_HPP
 #define FOOPLAYLISTMANAGER_HPP
+
+#include "abstractaudioplugin.h"
+#include "fooplaylist.hpp"
+#include "footrack.hpp"
+#include "fooplaybackorder.hpp"
 
 #include <QList>
 #include <QObject>
 #include <QUrl>
 
-namespace PlayOrder
-{
-	enum PlayOrder
-	{
-		repeatPlaylist,
-		repeatTrack,
-		shuffleTracks,
-		shuffleAlbums,
-		shuffleFolders,
-		defaultOrder,
-		randomOrder
-	};
-}
-
-class FooTrackList;
-
 class FooPlaylistManager : public QObject
 {
-
 	Q_OBJECT
 
-	static FooPlaylistManager *Instance;
-
-	QList<FooTrackList *> Playlists;
-	// one that played
-	FooTrackList *CurrentPlaylist;
-	int CurrentTruck;
-	// one that selected by tab
-	FooTrackList *CurrentlySelected;
-
-	PlayOrder::PlayOrder Order;
-
-	QList<QUrl> Queue;
-	QList<QUrl> PrevQueue;
-	int prevqueueindex;
-
-	FooPlaylistManager();
-	void init();
-
 public:
+	FooPlaylistManager(FooAudio::AbstractAudioPlugin *engine, QObject *parent = 0);
 	~FooPlaylistManager();
 
-	static FooPlaylistManager* instance();
+	void addFilesToCurrentPlaylist(QStringList);
+	QList<FooPlaylist *>* getPlaylists();
+	QUrl getNextTrack(FooPlaybackOrder::FooPlaybackOrder, FooPlayback::FooPlayback playback);
 
-	void addPlaylist(FooTrackList *playlist);
-	void deletePlaylist(FooTrackList *playlist);
-	void deletePlaylist(int);
-	QList<FooTrackList*> playlists();
-	FooTrackList* playlist(int number) { return Playlists.at(number);}
-	int playlist(FooTrackList* playlist) { return Playlists.indexOf(playlist);}
+	void setPlaylistColumnConfig(QString newConfig);
+	QString getPlaylistColumnConfig();
 
-	void setCurrentPlaylist(FooTrackList* playlist);
-	void setCurrentPlaylist(int playlist);
-	FooTrackList* currentPlaylist() { return CurrentPlaylist;}
-	int currentPlaylistIndex() { return Playlists.indexOf(CurrentPlaylist);}
+	void savePlaylistToPls(QString filePath);
+	void savePlaylistToM3u(QString filePath);
 
-	FooTrackList* currentlySelected() { return CurrentlySelected;}
-	void useSelectedPlaylist() {CurrentPlaylist = CurrentlySelected; CurrentTruck = 0;}
+private:
+	FooAudio::AbstractAudioPlugin *engine;
 
-	void setOrder(PlayOrder::PlayOrder order) { Order = order;}
-	PlayOrder::PlayOrder order() { return Order;}
+	QString playlistColumnConfig;
 
-	QUrl getNextFile();
-	QUrl nextFile(bool repeat, bool follow = true);
-	QUrl previousFile(bool repeat, bool follow = true);
+	QList<FooPlaylist*>* playlists;
 
-	void clearQueue ();
-	void addFileToQueue (QUrl file);
-	void removeFileFromQueue (QUrl file);
-	QList<QUrl> getQueue () {return Queue;}
-	void addToPrevQueue (QUrl path);
+	FooPlaylist *currentPlaylist;
+	FooPlaylist *currentPlayingPlaylist;
 
-	QUrl randomTrack();
+	//int metaVersion;
+
+	int playlistIndex(QString name, QUuid uuid) const;
 
 signals:
-	void playlistAdded(FooTrackList *playlist);
-	void playlistRemoved(FooTrackList *playlist);
-	void currentPlaylistChanged(FooTrackList *playlist);
+	void newPlaylistCreated(FooPlaylist *);
+	void playlistRemoved(QString, QUuid);
+	void playlistColumnConfigChanged(QString/*, int*/);
 
 public slots:
-	void currentTabChanged(int tab);
+	void createPlaylist();
+	void changeCurrentPlaylist(FooPlaylist *);
+	void play(FooPlaylist *, QUrl);
+	void removePlaylist(QString, QUuid);
 };
 
 #endif // FOOPLAYLISTMANAGER_HPP

@@ -18,35 +18,45 @@
  *
  ***********************************************************************/
 
-#ifndef FOOAPPLICATION_H
-#define FOOAPPLICATION_H
+#ifndef FOOSETTINGSMANAGER_HPP
+#define FOOSETTINGSMANAGER_HPP
 
-#include <QApplication>
+#include <QObject>
+#include <QString>
+#include <QVariant>
+#include <QMap>
+#include <QSettings>
 
-#include "abstractaudioplugin.h"
-#include "fooplaylistmanager.hpp"
-#include "fooplayermanager.hpp"
-#include "foomainwindow.hpp"
+#include "foosettingsmanagerwindow.hpp"
 
-
-class FooApplication : public QObject
+class FooSettingsManager : public QObject
 {
 	Q_OBJECT
+
 public:
-	FooApplication(QObject *parent = 0);
-	~FooApplication();
-	int start(int argc, char *argv[]);
+	static FooSettingsManager& instance()
+	{
+		static FooSettingsManager fooSettingsManager;
+		return fooSettingsManager;
+	}
+
+	void saveSettings(QString, QMap<QString, QVariant> &);
+	QMap<QString, QVariant> readSettings (QString);
 
 private:
-	QApplication *qApplication;
+	FooSettingsManager() {}
+	FooSettingsManager(const FooSettingsManager &);
+	FooSettingsManager& operator=(const FooSettingsManager&);
 
-	FooAudio::AbstractAudioPlugin *engine;
-	FooPlaylistManager *playlistManager;
-	FooPlayerManager *playerManager;
-	FooMainWindow *mainWindow;
+	FooSettingsManagerWindow settingsManagerWindow;
+
+	void saveSettings(const QMap<QString, QVariant> &, QSettings &);
+	void readSettings(QMap<QString, QVariant> &, QSettings &);
+
+signals:
 
 public slots:
-	void quitApp();
+	void showWindow();
 };
 
-#endif // FOOAPPLICATION_H
+#endif // FOOSETTINGSMANAGER_HPP

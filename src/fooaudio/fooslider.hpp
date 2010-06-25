@@ -18,35 +18,31 @@
  *
  ***********************************************************************/
 
-#ifndef FOOAPPLICATION_H
-#define FOOAPPLICATION_H
+#ifndef FOOSLIDER_HPP
+#define FOOSLIDER_HPP
 
-#include <QApplication>
+#include <QSlider>
 
-#include "abstractaudioplugin.h"
-#include "fooplaylistmanager.hpp"
-#include "fooplayermanager.hpp"
-#include "foomainwindow.hpp"
-
-
-class FooApplication : public QObject
+class FooSlider : public QSlider
 {
 	Q_OBJECT
 public:
-	FooApplication(QObject *parent = 0);
-	~FooApplication();
-	int start(int argc, char *argv[]);
+	explicit FooSlider(QWidget *parent = 0);
+	explicit FooSlider(Qt::Orientation orientation, QWidget *parent = 0);
+
+protected:
+	void mousePressEvent(QMouseEvent *ev);
+	void mouseReleaseEvent(QMouseEvent *ev);
 
 private:
-	QApplication *qApplication;
+	bool isChangeing;
 
-	FooAudio::AbstractAudioPlugin *engine;
-	FooPlaylistManager *playlistManager;
-	FooPlayerManager *playerManager;
-	FooMainWindow *mainWindow;
+signals:
+	void valueChanged2(qint64);
 
 public slots:
-	void quitApp();
+	void valuesChanged(qint64 position, qint64 total);
+
 };
 
-#endif // FOOAPPLICATION_H
+#endif // FOOSLIDER_HPP

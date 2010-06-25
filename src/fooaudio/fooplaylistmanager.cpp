@@ -1,244 +1,179 @@
+/**********************************************************************
+ *
+ * fooaudio
+ * Copyright (C) 2009-2010  fooaudio team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ***********************************************************************/
+
 #include <QDebug>
 
 #include "fooplaylistmanager.hpp"
-#include "footracklist.hpp"
+#include "fooplayback.hpp"
 
-FooPlaylistManager *FooPlaylistManager::Instance = 0;
-
-FooPlaylistManager::FooPlaylistManager() : CurrentPlaylist(0), CurrentlySelected(0), CurrentTruck(0)
+FooPlaylistManager::FooPlaylistManager(FooAudio::AbstractAudioPlugin *engine, QObject *parent) : QObject(parent)
 {
+	this->engine = engine;
+	playlists = new QList<FooPlaylist*>();
+//	metaVersion = 1;
+
+	setPlaylistColumnConfig("%pn;%ti;%al;%ar");
+
+	if (playlists->size() < 1)
+	{
+		createPlaylist();
+		currentPlayingPlaylist = NULL;
+	}
 }
 
 FooPlaylistManager::~FooPlaylistManager()
 {
+	delete playlists;
 }
 
-void FooPlaylistManager::init()
+void FooPlaylistManager::play(FooPlaylist *playlist, QUrl url)
 {
-	qDebug() << "FooPlaylistManager: INIT";
+	currentPlayingPlaylist = playlist;
+
+	engine->playFile(url);
 }
 
-FooPlaylistManager* FooPlaylistManager::instance()
+void FooPlaylistManager::setPlaylistColumnConfig(QString newConfig)
 {
-	if (0 == Instance)
+	playlistColumnConfig = newConfig;
+//	++metaVersion;
+
+	emit playlistColumnConfigChanged(newConfig/*, metaVersion*/);
+}
+
+QString FooPlaylistManager::getPlaylistColumnConfig()
+{
+	return playlistColumnConfig;
+}
+
+int FooPlaylistManager::playlistIndex(QString name, QUuid uuid) const
+{
+	int i;
+
+	for (i = 0; i < playlists->size(); ++i)
 	{
-		Instance = new FooPlaylistManager();
-		Instance->init();
-	}
-
-	return Instance;
-}
-
-void FooPlaylistManager::addPlaylist(FooTrackList *playlist)
-{
-	qDebug() << "FooPlaylistManager: ADD" << playlist->name();
-
-	Playlists.append(playlist);
-	emit playlistAdded(playlist);
-
-	qDebug() << "test 2";
-
-	//set Current playlist as first added
-	if (CurrentPlaylist = 0)
-		CurrentPlaylist = playlist;
-
-	qDebug() << "test 3";
-}
-
-void FooPlaylistManager::deletePlaylist(int i)
-{
-	if (i < 0 || i >= Playlists.size())
-	{
-		return;
-	}
-	else
-	{
-		Playlists.removeAt(i);
-	}
-}
-
-void FooPlaylistManager::deletePlaylist(FooTrackList *playlist)
-{
-	int i = Playlists.indexOf(playlist);
-
-	if (i < 0)
-	{
-		return;
-	}
-	else
-	{
-		Playlists.removeAt(i);
-	}
-
-	emit playlistRemoved(playlist);
-	delete playlist;
-	playlist = 0;
-
-}
-
-void FooPlaylistManager::setCurrentPlaylist(FooTrackList* playlist)
-{
-	CurrentPlaylist = playlist;
-	emit currentPlaylistChanged(playlist);
-}
-
-void FooPlaylistManager::setCurrentPlaylist(int playlist)
-{
-	if (playlist < 0 || playlist > Playlists.count())
-	{
-		CurrentPlaylist = 0;
-	}
-	CurrentPlaylist = Playlists.at(playlist);
-	emit currentPlaylistChanged(CurrentPlaylist);
-}
-
-void FooPlaylistManager::currentTabChanged(int tab)
-{
-	CurrentlySelected = Playlists.at(tab);
-}
-
-QList<FooTrackList *> FooPlaylistManager::playlists()
-{
-	return Playlists;
-}
-
-QUrl FooPlaylistManager::randomTrack()
-{
-	if (!CurrentPlaylist)
-		return QUrl();
-
-	int count = CurrentPlaylist->count();
-	int randomIndex = qrand() % count;
-
-	//if (isCursorFollowsPlayback())
-	//	this->fooTabWidget->setCurrentItem(randomIndex);
-
-	return (*CurrentPlaylist)[randomIndex].file();
-}
-
-QUrl FooPlaylistManager::getNextFile()
-{
-	QUrl file;
-	if (Queue.isEmpty())
-	{
-		// if Queue is empty take order option
-		switch (Order)
+		if (playlists->at(i)->name() == name && playlists->at(i)->uuid() == uuid)
 		{
-		case PlayOrder::shuffleTracks:
-			file = randomTrack();
-			break;
-		case PlayOrder::repeatTrack:
-			file = (*CurrentPlaylist)[CurrentTruck].file();
-			break;
-		default:
-			file = nextFile(Order == PlayOrder::repeatPlaylist, false/*isCursorFollowsPlayback()*/);
-			break;
+			return i;
 		}
 	}
-	else
-	{
-		// if we have Queue priority is on these files
-		// TODO what about order here?
-		qDebug() << "FooPlaylistManager::Queue";
-		file = Queue.takeLast();
-	}
 
-	qDebug() << "FooPlaylistManager:: nextFile : " << file.toLocalFile();
-	return file;
+	return -1;
 }
 
-QUrl FooPlaylistManager::nextFile(bool repeat, bool follow)
+void FooPlaylistManager::removePlaylist(QString name, QUuid uuid)
 {
-	qDebug() << "FooPlaylistManager::nextFile";
-	int index = CurrentTruck;
-	int max = CurrentPlaylist->count();
+	int i = playlistIndex(name, uuid);
 
-	if (!CurrentPlaylist || CurrentTruck < 0)
-		return QUrl();
-
-	index++;
-
-	if ( (index == max) && repeat)
+	if (i >= 0)
 	{
-		qDebug() << "FooPlaylistManager: nextFile: for: if: repeat";
+		FooPlaylist* const p = playlists->at(i);
 
-		//CurrentPlayingPlaylist = wid;
-		CurrentTruck = 0;
-		//if (follow) wid->setCurrentItem(currentPlayingItem);
-		return (*CurrentPlaylist)[CurrentTruck].file();
-	}
-	else if ((index == max) && !repeat)
-	{
-		qDebug() << "FooPlaylistManager: nextFile: for: if: !repeat";
+		if (currentPlayingPlaylist == p)
+		{
+			currentPlayingPlaylist = NULL;
+		}
 
-		return QUrl();
-	}
-	else if (index < max)
-	{
-		//currentPlayingPlaylist = wid;
-		CurrentTruck++;
-		//if (follow) wid->setCurrentItem(currentPlayingItem);
-		return (*CurrentPlaylist)[CurrentTruck].file();
-	}
+		delete p;
 
-	return QUrl();
+		playlists->removeAt(i);
+
+		emit playlistRemoved(name, uuid);
+
+		if (playlists->size() == 0)
+		{
+			createPlaylist();
+		}
+	}
 }
 
-QUrl FooPlaylistManager::previousFile(bool repeat, bool follow)
+void FooPlaylistManager::addFilesToCurrentPlaylist(QStringList files)
 {
-	qDebug() << "FooPlaylistManager::previousFile";
+	QList<FooTrack> tracks;
 
-	if (!CurrentPlaylist || CurrentTruck < 0)
-		return QUrl();
-
-	int max = CurrentPlaylist->count();
-
-	if ( (CurrentTruck == 0) && repeat)
+	for (int i = 0; i < files.size(); i++)
 	{
-		qDebug() << "FooPlaylistManager: nextFile: for: if: repeat";
+		QString file = files.at(i);
 
-		//CurrentPlayingPlaylist = wid;
-		CurrentTruck = max - 1;
-		//if (follow) wid->setCurrentItem(currentPlayingItem);
-		return (*CurrentPlaylist)[CurrentTruck].file();
-	}
-	else if ((CurrentTruck == 0) && !repeat)
-	{
-		qDebug() << "FooPlaylistManager: nextFile: for: if: !repeat";
+		FooTrack track(file);
 
-		return QUrl();
-	}
-	else if (CurrentTruck < max)
-	{
-		//currentPlayingPlaylist = wid;
-		CurrentTruck--;
-		//if (follow) wid->setCurrentItem(currentPlayingItem);
-		return (*CurrentPlaylist)[CurrentTruck].file();
+		QMap<FooTrackInfo::FooTrackInfo, QString> meta = engine->metaData(file);
+
+		track.setTitle(meta.value(FooTrackInfo::title));
+		track.setAlbum(meta.value(FooTrackInfo::album));
+		track.setArtist(meta.value(FooTrackInfo::artist));
+
+		tracks.append(track);
 	}
 
-	return QUrl();
+	currentPlaylist->addTracks(tracks);
 }
 
-void FooPlaylistManager::addToPrevQueue (QUrl path)
+void FooPlaylistManager::createPlaylist()
 {
+	FooPlaylist *playlist = new FooPlaylist("New playlist", playlistColumnConfig, /*metaVersion,*/ this);
+
+	connect(playlist, SIGNAL(currentChanged(FooPlaylist *)), this, SLOT(changeCurrentPlaylist(FooPlaylist*)));
+	connect(playlist, SIGNAL(play(FooPlaylist*,QUrl)), this, SLOT(play(FooPlaylist*,QUrl)));
+	connect(this, SIGNAL(playlistColumnConfigChanged(QString/*, int*/)), playlist, SLOT(playlistColumnConfigChanged(QString/*, int*/)));
+
+	playlists->append(playlist);
+
+	emit newPlaylistCreated(playlist);
 }
 
-void FooPlaylistManager::addFileToQueue (QUrl file)
+QList<FooPlaylist*>* FooPlaylistManager::getPlaylists()
 {
-	qDebug() << "FooPlaylistManager::addToQueue";
-	qDebug() << "plik dodany do kolejki: " << file.toString();
-	Queue.prepend(file);
+	return playlists;
 }
 
-void FooPlaylistManager::removeFileFromQueue (QUrl file)
+void FooPlaylistManager::changeCurrentPlaylist(FooPlaylist *p)
 {
-	qDebug() << "FooPlaylistManager::removeFromQueue";
-	qDebug() << "plik usuniety z kolejki: " << file.toString();
-	Queue.removeOne(file);
+	currentPlaylist = p;
+
+	qDebug() << currentPlaylist;
 }
 
-void FooPlaylistManager::clearQueue()
+QUrl FooPlaylistManager::getNextTrack(FooPlaybackOrder::FooPlaybackOrder playbackOrder, FooPlayback::FooPlayback playback)
 {
-	qDebug() << "FooPlaylistManager::clearQueue";
-	Queue.clear();
+	if (currentPlayingPlaylist == NULL)
+	{
+		if (currentPlaylist == NULL)
+		{
+			return QUrl();
+		}
+		else
+		{
+			currentPlayingPlaylist = currentPlaylist;
+		}
+	}
+
+	return currentPlayingPlaylist->getNextTrack(playbackOrder, playback);
+}
+
+void FooPlaylistManager::savePlaylistToPls(QString filePath)
+{
+
+}
+
+void FooPlaylistManager::savePlaylistToM3u(QString filePath)
+{
+
 }
