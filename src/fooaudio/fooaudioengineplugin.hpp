@@ -18,33 +18,21 @@
  *
  ***********************************************************************/
 
-#ifndef FOOCHANGENAME_HPP
-#define FOOCHANGENAME_HPP
+#ifndef FOOAUDIOENGINEPLUGIN_HPP
+#define FOOAUDIOENGINEPLUGIN_HPP
 
-#include <QWidget>
+#include "fooaudioengine.hpp"
 
-class QTabBar;
-class QLineEdit;
-class QPushButton;
-
-class FooChangeName : public QWidget
+namespace Fooaudio
 {
-	Q_OBJECT
+	class FooAudioEnginePlugin
+	{
+	public:
+		virtual ~FooAudioEnginePlugin() {}
+		virtual FooAudioEngine* getAudioEnginePlugin() = 0;
+	};
+}
 
-public:
-	FooChangeName(int, QWidget *parent = 0);
-	~FooChangeName();
+Q_DECLARE_INTERFACE(Fooaudio::FooAudioEnginePlugin, "org.fooaudio.fooaudioengineplugin/1.0");
 
-private:
-	int index;
-
-	QTabBar *tabBar;
-	QLineEdit *lineEdit;
-	QPushButton *saveButton;
-	QPushButton *closeButton;
-
-public slots:
-	void save();
-};
-
-#endif // FOOCHANGENAME_HPP
+#endif // FOOAUDIOENGINEPLUGIN_HPP

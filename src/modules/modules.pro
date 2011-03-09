@@ -1,3 +1,5 @@
 CONFIG += ordered
 TEMPLATE = subdirs
-SUBDIRS += phononplugin
+SUBDIRS += phononplugin \
+	fooaudioplaylistm3uformat \
+	fooaudioplaylistplsformat

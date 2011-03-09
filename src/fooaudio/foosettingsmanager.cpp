@@ -21,73 +21,83 @@
 #include "foosettingsmanager.hpp"
 #include <QFileDialog>
 #include <QDebug>
+#include <QCoreApplication>
 
-void FooSettingsManager::showWindow()
+namespace Fooaudio
 {
-	settingsManagerWindow.show();
-}
-
-void FooSettingsManager::saveSettings(QString name, QMap<QString, QVariant> &mapa)
-{
-	QSettings settings(QDir::homePath() + "/.fooaudio/" + name, QSettings::IniFormat);
-	settings.setIniCodec("UTF-8");
-
-	saveSettings(mapa, settings);
-
-	settings.sync();
-}
-
-void FooSettingsManager::saveSettings(const QMap<QString, QVariant> &mapa, QSettings &settings)
-{
-	QMapIterator<QString, QVariant> i(mapa);
-	while (i.hasNext())
+	FooSettingsManager::FooSettingsManager()
 	{
-		i.next();
-		QString key = i.key();
-		QVariant value = i.value();
-
-		if (value.type() == QVariant::Map)
-		{
-			settings.beginGroup(key);
-			saveSettings(value.toMap(), settings);
-			settings.endGroup();
-		}
-		else
-		{
-			settings.setValue(key, value);
-		}
-	}
-}
-
-QMap<QString, QVariant> FooSettingsManager::readSettings(QString name)
-{
-	QSettings settings(QDir::homePath() + "/.fooaudio/" + name, QSettings::IniFormat);
-	settings.setIniCodec("UTF-8");
-
-	QMap<QString, QVariant> mapa;
-
-	readSettings(mapa, settings);
-
-	return mapa;
-}
-
-void FooSettingsManager::readSettings(QMap<QString, QVariant> &mapa, QSettings &settings)
-{
-	QStringList childKeys = settings.childKeys();
-
-	for (int i = 0; i < childKeys.size(); i++)
-	{
-		mapa.insert(childKeys.at(i), settings.value(childKeys.at(i)));
+		settingsManagerWindow = new FooSettingsManagerWindow();
+		connect(qApp, SIGNAL(aboutToQuit()), settingsManagerWindow, SLOT(deleteLater()));
 	}
 
-	QStringList childGroups = settings.childGroups();
-
-	for (int i = 0; i < childGroups.size(); i++)
+	void FooSettingsManager::showWindow()
 	{
-		settings.beginGroup(childGroups.at(i));
+		settingsManagerWindow->show();
+	}
+
+	void FooSettingsManager::saveSettings(QString name, QMap<QString, QVariant> &mapa)
+	{
+		QSettings settings(QDir::homePath() + "/.fooaudio/" + name, QSettings::IniFormat);
+		settings.setIniCodec("UTF-8");
+
+		saveSettings(mapa, settings);
+
+		settings.sync();
+	}
+
+	void FooSettingsManager::saveSettings(const QMap<QString, QVariant> &mapa, QSettings &settings)
+	{
+		QMapIterator<QString, QVariant> i(mapa);
+		while (i.hasNext())
+		{
+			i.next();
+			QString key = i.key();
+			QVariant value = i.value();
+
+			if (value.type() == QVariant::Map)
+			{
+				settings.beginGroup(key);
+				saveSettings(value.toMap(), settings);
+				settings.endGroup();
+			}
+			else
+			{
+				settings.setValue(key, value);
+			}
+		}
+	}
+
+	QMap<QString, QVariant> FooSettingsManager::readSettings(QString name)
+	{
+		QSettings settings(QDir::homePath() + "/.fooaudio/" + name, QSettings::IniFormat);
+		settings.setIniCodec("UTF-8");
+
+		QMap<QString, QVariant> mapa;
 
 		readSettings(mapa, settings);
 
-		settings.endGroup();
+		return mapa;
+	}
+
+	void FooSettingsManager::readSettings(QMap<QString, QVariant> &mapa, QSettings &settings)
+	{
+		QStringList childKeys = settings.childKeys();
+
+		for (int i = 0; i < childKeys.size(); i++)
+		{
+			mapa.insert(childKeys.at(i), settings.value(childKeys.at(i)));
+		}
+
+		QStringList childGroups = settings.childGroups();
+
+		for (int i = 0; i < childGroups.size(); i++)
+		{
+			settings.beginGroup(childGroups.at(i));
+
+			readSettings(mapa, settings);
+
+			settings.endGroup();
+		}
 	}
 }

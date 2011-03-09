@@ -18,11 +18,22 @@
  *
  ***********************************************************************/
 
-#include "abstractaudioplugin.h"
+#ifndef FOOAUDIOPLAYLISTM3UFORMATPLUGIN_HPP
+#define FOOAUDIOPLAYLISTM3UFORMATPLUGIN_HPP
 
-namespace FooAudio
+#include <QObject>
+
+#include "fooplaylistformatplugin.hpp"
+#include "fooplaylistformat.hpp"
+
+class FooaudioPlaylistM3uFormatPlugin : public QObject, public Fooaudio::FooPlaylistFormatPlugin
 {
-	AbstractAudioPlugin::AbstractAudioPlugin(QObject *parent) : QObject(parent)
-	{
-	}
-}
+	Q_OBJECT
+	Q_INTERFACES(Fooaudio::FooPlaylistFormatPlugin)
+
+public:
+	explicit FooaudioPlaylistM3uFormatPlugin(QObject *parent = 0);
+	Fooaudio::FooPlaylistFormat* getPlaylistFormatPlugin();
+};
+
+#endif // FOOAUDIOPLAYLISTM3UFORMATPLUGIN_HPP

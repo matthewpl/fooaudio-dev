@@ -18,20 +18,22 @@
  *
  ***********************************************************************/
 
-#include <abstractaudiointerface.h>
-#include <abstractaudioplugin.h>
+#ifndef PHONONPLUGIN_HPP
+#define PHONONPLUGIN_HPP
+
+#include <fooaudioengineplugin.hpp>
+#include <fooaudioengine.hpp>
 
 #include <QObject>
 
-namespace FooAudio
+class PhononPlugin : public QObject, public Fooaudio::FooAudioEnginePlugin
 {
-	 class PhononPlugin : public QObject, public AbstractAudioInterface
-	 {
-		  Q_OBJECT
-		  Q_INTERFACES(FooAudio::AbstractAudioInterface)
+	Q_OBJECT
+	Q_INTERFACES(Fooaudio::FooAudioEnginePlugin)
 
-	 public:
-		  PhononPlugin(QObject *parent = 0);
-		  AbstractAudioPlugin *GetAudioPlugin();
-	 };
-}
+public:
+	explicit PhononPlugin(QObject *parent = 0);
+	Fooaudio::FooAudioEngine* getAudioEnginePlugin();
+};
+
+#endif // PHONONPLUGIN_HPP

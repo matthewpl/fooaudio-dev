@@ -23,61 +23,63 @@
 
 #include <QTabWidget>
 
-#include "footabbar.hpp"
 #include "fooplaylistwidget.hpp"
 #include "fooplaylistmanager.hpp"
 
-class FooTabBar;
-
-class FooTabWidget : public QTabWidget
+namespace Fooaudio
 {
-	Q_OBJECT
+	class FooTabBar;
 
-public:
-	FooTabWidget (FooPlaylistManager *playlistManager, QWidget *parent = 0);
+	class FooTabWidget : public QTabWidget
+	{
+		Q_OBJECT
 
-	void setCurrentPlaylist(int index);
-	int getCurrentPlaylistIndex();
-	void setCurrentItem(int index);
-	int getCurrentItemIndex();
+	public:
+		FooTabWidget (FooPlaylistManager *playlistManager, QWidget *parent = 0);
 
-private:
-	FooPlaylistManager *playlistManager;
+		void setCurrentPlaylist(int index);
+		int getCurrentPlaylistIndex();
+		void setCurrentItem(int index);
+		int getCurrentItemIndex();
 
-	FooTabBar *tabBar;
+	private:
+		FooPlaylistManager *playlistManager;
 
-	int playlistWidgetIndex(QString name, QUuid uuid) const;
+		FooTabBar *tabBar;
 
-public slots:
-	void cloneTab (int index = -1);
-	void closeTab (int index = -1);
-	void closeOtherTabs (int index);
-	void nextTab ();
-	void previousTab ();
+		int playlistWidgetIndex(QString name, QUuid uuid) const;
 
-	//void itemClicked(QTreeWidgetItem *, int);
+	public slots:
+		void cloneTab (int index = -1);
+		void closeTab (int index = -1);
+		void closeOtherTabs (int index);
+		void nextTab ();
+		void previousTab ();
 
-	void cut (bool remove = true);
-	void remove ();
-	void copy ();
-	void paste ();
-	void clear ();
-	void selectAll ();
+		void cut (bool remove = true);
+		void remove ();
+		void copy ();
+		void paste ();
+		void clear ();
+		void selectAll ();
 
-	void createNewPlaylistWidget(FooPlaylist *);
-	void removePlaylistWidget(QString, QUuid);
-	void currentChanged(int);
+		void createNewPlaylistWidget(FooPlaylist *);
+		void removePlaylistWidget(QString, QUuid);
+		void renamePlaylistName(QUuid uuid, QString oldName, QString newName);
+		void currentChanged(int);
 
-signals:
-	void newTab();
-	void removePlaylist(QString, QUuid);
+	private slots:
+		void tabNameChange(int index, QString newName);
 
-	// tabwidget signals
-	void tabsChanged();
-	void lastTabClosed();
+	signals:
+		void newTab();
+		void removePlaylist(QString name, QUuid uuid);
+		void renamePlaylist(QUuid uuid, QString oldName, QString newName);
 
-	//void itemDoubleClickedSignal(QTreeWidgetItem *item, int column);
-};
+		void tabsChanged();
+		void lastTabClosed();
+	};
+}
 
 #endif // _FOOTABWIDGET_HPP_
 

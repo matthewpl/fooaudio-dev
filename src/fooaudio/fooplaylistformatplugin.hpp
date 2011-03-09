@@ -18,35 +18,21 @@
  *
  ***********************************************************************/
 
-#ifndef FOOAPPLICATION_H
-#define FOOAPPLICATION_H
+#ifndef FOOPLAYLISTFORMATPLUGIN_HPP
+#define FOOPLAYLISTFORMATPLUGIN_HPP
 
-#include <QApplication>
+#include "fooplaylistformat.hpp"
 
-#include "abstractaudioplugin.h"
-#include "fooplaylistmanager.hpp"
-#include "fooplayermanager.hpp"
-#include "foomainwindow.hpp"
-
-
-class FooApplication : public QObject
+namespace Fooaudio
 {
-	Q_OBJECT
-public:
-	FooApplication(QObject *parent = 0);
-	~FooApplication();
-	int start(int argc, char *argv[]);
+	class FooPlaylistFormatPlugin
+	{
+	public:
+		virtual ~FooPlaylistFormatPlugin() {}
+		virtual FooPlaylistFormat* getPlaylistFormatPlugin() = 0;
+	};
+}
 
-private:
-	QApplication *qApplication;
+Q_DECLARE_INTERFACE(Fooaudio::FooPlaylistFormatPlugin, "org.fooaudio.fooplaylistformatplugin/1.0");
 
-	FooAudio::AbstractAudioPlugin *engine;
-	FooPlaylistManager *playlistManager;
-	FooPlayerManager *playerManager;
-	FooMainWindow *mainWindow;
-
-public slots:
-	void quitApp();
-};
-
-#endif // FOOAPPLICATION_H
+#endif // FOOPLAYLISTFORMATPLUGIN_HPP

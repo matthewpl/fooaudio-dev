@@ -30,182 +30,179 @@
 #include "fooslider.hpp"
 #include "fooplaybackorder.hpp"
 
-class	QSystemTrayIcon;
-
-class	FooPhononAudioEngine;
-
-class	FooMainWindow : public QMainWindow
+namespace Fooaudio
 {
-	Q_OBJECT
+	class	FooMainWindow : public QMainWindow
+	{
+		Q_OBJECT
 
-public:
-	FooMainWindow(FooPlaylistManager *playlistManager, FooPlayerManager *playerManager);
-	~FooMainWindow();
+	public:
+		FooMainWindow(FooPlaylistManager *playlistManager, FooPlayerManager *playerManager);
+		~FooMainWindow();
 
-	int getMaxProgress();
+		int getMaxProgress();
 
-	bool isCursorFollowsPlayback();
+		bool isCursorFollowsPlayback();
 
-	void readSettings();
+		void readSettings();
 
-signals:
-	void changePlaybackOrder(FooPlaybackOrder::FooPlaybackOrder);
+	signals:
+		void changePlaybackOrder(FooPlaybackOrder::FooPlaybackOrder);
 
-private slots:
-	void saveSettings();
-	void mute(bool m);
+	private slots:
+		void saveSettings();
+		void mute(bool m);
 
-	void open();
-	void openAudioCD();
-	void addFiles();
-	void addFolder();
-	void addLocation();
-	void loadPlaylist();
-	void savePlaylist();
-	void exit();
+		void open();
+		void openAudioCD();
+		void addFiles();
+		void addFolder();
+		void addLocation();
+		void loadPlaylist();
+		void savePlaylist();
 
-	void undo();
-	void redo();
-	void sortBy();
-	void randomize();
-	void reverse();
-	void sortByFilePatch();
-	void sortByAlbum();
-	void sortByTrackNumber();
-	void sortByTitle();
-	void search();
-	void removeDuplicates();
-	void removeDeadItems();
+		void undo();
+		void redo();
+		void sortBy();
+		void randomize();
+		void reverse();
+		void sortByFilePatch();
+		void sortByAlbum();
+		void sortByTrackNumber();
+		void sortByTitle();
+		void search();
+		void removeDuplicates();
+		void removeDeadItems();
 
-	void alwaysOnTop();
-	void console();
-	void equalizer();
-	void playlistManagerView();
-	void quickSetup();
-	void enableLayoutEditionMode();
-	void createScratchbox();
+		void alwaysOnTop();
+		void console();
+		void equalizer();
+		void playlistManagerView();
+		void quickSetup();
+		void enableLayoutEditionMode();
+		void createScratchbox();
 
-	void defaultOrder();
-	void repeatPlaylistOrder();
-	void repeatTrackOrder();
-	void randomOrder();
-	void shuffleTracksOrder();
-	void shuffleAlbumsOrder();
-	void shuffleFoldersOrder();
-	void stopAfterCurrent();
-	void playbackFollowsCursor();
-	void cursorFollowsPlayback();
+		void defaultOrder();
+		void repeatPlaylistOrder();
+		void repeatTrackOrder();
+		void randomOrder();
+		void shuffleTracksOrder();
+		void shuffleAlbumsOrder();
+		void shuffleFoldersOrder();
+		void stopAfterCurrent();
+		void playbackFollowsCursor();
+		void cursorFollowsPlayback();
 
-	void albumList();
-	void searchAlbum();
-	void configure();
-	void uncheckAllOrders();
-	void about();
+		void albumList();
+		void searchAlbum();
+		void configure();
+		void uncheckAllOrders();
+		void about();
 
-	void cutLayout();
-	void copyLayout();
-	void pasteLayout();
+		void cutLayout();
+		void copyLayout();
+		void pasteLayout();
 
-	void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
-	void setTrayIcon();
+		void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+		void setTrayIcon();
 
-	// update window title according to new meta data
-	void updateWindowTitle(QMultiMap<QString, QString> newMetaData);
+		// update window title according to new meta data
+		void updateWindowTitle(QMultiMap<QString, QString> newMetaData);
 
-private:
-	FooPlaylistManager *playlistManager;
-	FooPlayerManager *playerManager;
+	private:
+		FooPlaylistManager *playlistManager;
+		FooPlayerManager *playerManager;
 
-	QSize *iconSize;
+		QSize *iconSize;
 
-	FooTabWidget *fooTabWidget;
+		FooTabWidget *fooTabWidget;
 
-	FooSlider *trackSlider;
-	FooSlider *volumeSlider;
+		FooSlider *trackSlider;
+		FooSlider *volumeSlider;
 
-	QSystemTrayIcon *trayIcon;
+		QSystemTrayIcon *trayIcon;
 
-	QMenu *fileMenu;
-	QAction *openAction;
-	QAction *openAudioCDAction;
-	QAction *addFilesAction;
-	QAction *addFolderAction;
-	QAction *addLocationAction;
-	QAction *newPlaylistAction;
-	QAction *loadPlaylistAction;
-	QAction *savePlaylistAction;
-	QAction *preferencesAction;
-	QAction *exitAction;
+		QMenu *fileMenu;
+		QAction *openAction;
+		QAction *openAudioCDAction;
+		QAction *addFilesAction;
+		QAction *addFolderAction;
+		QAction *addLocationAction;
+		QAction *newPlaylistAction;
+		QAction *loadPlaylistAction;
+		QAction *savePlaylistAction;
+		QAction *preferencesAction;
+		QAction *exitAction;
 
-	QMenu *editMenu;
-	QAction *undoAction;
-	QAction *redoAction;
-	QAction *clearAction;
-	QAction *selectAllAction;
-	QMenu *selectionMenu;
-	QAction *removeAction;
-	QAction *cropAction;
-	QMenu *sortMenu;
-	QAction *sortByAction;
-	QAction *randomizeAction;
-	QAction *reverseAction;
-	QAction *sortByFilePatchAction;
-	QAction *sortByArtisAction;
-	QAction *sortByAlbumAction;
-	QAction *sortByTrackNumberAction;
-	QAction *sortByTitleAction;
-	QAction *searchAction;
-	QAction *removeDuplicatesAction;
-	QAction *removeDeadItemsAction;
+		QMenu *editMenu;
+		QAction *undoAction;
+		QAction *redoAction;
+		QAction *clearAction;
+		QAction *selectAllAction;
+		QMenu *selectionMenu;
+		QAction *removeAction;
+		QAction *cropAction;
+		QMenu *sortMenu;
+		QAction *sortByAction;
+		QAction *randomizeAction;
+		QAction *reverseAction;
+		QAction *sortByFilePatchAction;
+		QAction *sortByArtisAction;
+		QAction *sortByAlbumAction;
+		QAction *sortByTrackNumberAction;
+		QAction *sortByTitleAction;
+		QAction *searchAction;
+		QAction *removeDuplicatesAction;
+		QAction *removeDeadItemsAction;
 
-	QMenu *viewMenu;
-	QAction *alwaysOnTopAction;
-	QMenu *visualisationsMenu;
-	QAction *consoleAction;
-	QAction *equalizerAction;
-	QAction *playlistManagerAction;
-	QMenu *layoutMenu;
-	QAction *quickSetupAction;
-	QAction *enableLayoutEditionModeAction;
-	QAction *createScratchboxAction;
-	QAction *cutLayoutAction;
-	QAction *copyLayoutAction;
-	QAction *pasteLayoutAction;
+		QMenu *viewMenu;
+		QAction *alwaysOnTopAction;
+		QMenu *visualisationsMenu;
+		QAction *consoleAction;
+		QAction *equalizerAction;
+		QAction *playlistManagerAction;
+		QMenu *layoutMenu;
+		QAction *quickSetupAction;
+		QAction *enableLayoutEditionModeAction;
+		QAction *createScratchboxAction;
+		QAction *cutLayoutAction;
+		QAction *copyLayoutAction;
+		QAction *pasteLayoutAction;
 
-	QMenu *playbackMenu;
-	QAction *stopAction;
-	QAction *pauseAction;
-	QAction *playAction;
-	QAction *prevAction;
-	QAction *nextAction;
-	QAction *randomAction;
-	QMenu *orderMenu;
-	QAction *defaultOrderAction;
-	QAction *repeatPlaylistOrderAction;
-	QAction *repeatTrackOrderAction;
-	QAction *randomOrderAction;
-	QAction *shuffleTracksOrderAction;
-	QAction *shuffleAlbumsOrderAction;
-	QAction *shuffleFoldersOrderAction;
-	QAction *stopAfterCurrentAction;
-	QAction *playbackFollowsCursorAction;
-	QAction *cursorFollowsPlaybackAction;
+		QMenu *playbackMenu;
+		QAction *stopAction;
+		QAction *pauseAction;
+		QAction *playAction;
+		QAction *prevAction;
+		QAction *nextAction;
+		QAction *randomAction;
+		QMenu *orderMenu;
+		QAction *defaultOrderAction;
+		QAction *repeatPlaylistOrderAction;
+		QAction *repeatTrackOrderAction;
+		QAction *randomOrderAction;
+		QAction *shuffleTracksOrderAction;
+		QAction *shuffleAlbumsOrderAction;
+		QAction *shuffleFoldersOrderAction;
+		QAction *stopAfterCurrentAction;
+		QAction *playbackFollowsCursorAction;
+		QAction *cursorFollowsPlaybackAction;
 
-	QMenu *libraryMenu;
-	QAction *albumListAction;
-	QAction *searchAlbumAction;
-	QAction *configureAction;
+		QMenu *libraryMenu;
+		QAction *albumListAction;
+		QAction *searchAlbumAction;
+		QAction *configureAction;
 
-//	QMenu *settingsMenu;
-//	QAction *trayIconAction;
+		//	QMenu *settingsMenu;
+		//	QAction *trayIconAction;
 
-	QMenu *helpMenu;
-	QAction *aboutAction;
-	QAction *aboutQtAction;
+		QMenu *helpMenu;
+		QAction *aboutAction;
+		QAction *aboutQtAction;
 
-	QMenu *trayMenu;
+		QMenu *trayMenu;
 
-	/*QAction *cutAction;
+		/*QAction *cutAction;
 	QAction *copyAction;
 	QAction *pasteAction;
 	QMenu *queueMenu;
@@ -213,23 +210,24 @@ private:
 	QAction *removeFromQueueAction;
 	QAction *clearQueueAction;*/
 
-	QAction *volumeAction;
+		QAction *volumeAction;
 
-	QToolBar *trackToolBar;
-	QToolBar *playbackToolBar;
-	QToolBar *volumeToolBar;
+		QToolBar *trackToolBar;
+		QToolBar *playbackToolBar;
+		QToolBar *volumeToolBar;
 
-	void createMenus();
-	void createToolBars();
-	void createActions();
-	void createStatusBar();
-	void createSystrayIcon();
+		void createMenus();
+		void createToolBars();
+		void createActions();
+		void createStatusBar();
+		void createSystrayIcon();
 
-	void playbackOrderChanged(FooPlaybackOrder::FooPlaybackOrder);
+		void playbackOrderChanged(FooPlaybackOrder::FooPlaybackOrder);
 
-protected:
-	void closeEvent(QCloseEvent *);
-};
+	protected:
+		void closeEvent(QCloseEvent *);
+	};
+}
 
 #endif // _FOOMAINWINDOW_HPP_
 

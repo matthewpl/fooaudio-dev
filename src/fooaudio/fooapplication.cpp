@@ -18,70 +18,60 @@
  *
  ***********************************************************************/
 
-#include "fooapplication.h"
+#include "fooapplication.hpp"
 #include "foomainwindow.hpp"
-#include "abstractaudioplugin.h"
-#include "abstractaudiointerface.h"
+#include "fooaudioengine.hpp"
+#include "fooaudioengineplugin.hpp"
+#include "foopluginmanager.hpp"
+#include "nopluginexception.hpp"
 
-#include <QPluginLoader>
-#include <QFileInfo>
-
-FooApplication::FooApplication(QObject *parent) : QObject(parent)
+namespace Fooaudio
 {
-}
-
-FooApplication::~FooApplication()
-{
-	delete qApplication;
-}
-
-int FooApplication::start(int argc, char *argv[])
-{
-	qApplication = new QApplication(argc, argv);
-
-	//QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, QDir::homePath() + "/.fooaudio/");
-
-
-	QObject::connect(qApplication, SIGNAL(aboutToQuit()), this, SLOT(quitApp()));
-
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-	QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-	qApplication->setApplicationName("fooaudio");
-	qApplication->setQuitOnLastWindowClosed(true);
-
-	QFileInfo pluginPath("../lib/libphononplugin.so");
-	QPluginLoader loader(pluginPath.absoluteFilePath());
-
-	QObject *p = loader.instance();
-	if(!p)
+	FooApplication::FooApplication(QObject *parent) : QObject(parent)
 	{
-		qDebug() << loader.errorString();
-		QMessageBox msgBox;
-		msgBox.setText(tr("Can't find Audio Plugin."));
-		return msgBox.exec();
 	}
-	else
+
+	FooApplication::~FooApplication()
 	{
-		FooAudio::AbstractAudioInterface *aai = qobject_cast<FooAudio::AbstractAudioInterface*>(p);
-		if(!aai)
+		delete mainWindow;
+
+		delete qApplication;
+	}
+
+	int FooApplication::start(int argc, char *argv[])
+	{
+		qApplication = new QApplication(argc, argv);
+
+		QObject::connect(qApplication, SIGNAL(aboutToQuit()), this, SLOT(quitApp()));
+
+		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+		QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+		QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+		qApplication->setApplicationName("fooaudio");
+		qApplication->setQuitOnLastWindowClosed(true);
+
+		try
+		{
+			FooPluginManager::instance().findPlugins();
+		}
+		catch (NoPluginException& e)
 		{
 			QMessageBox msgBox;
-			msgBox.setText(tr("Can't cast to AbstractAudioInterface!."));
+			msgBox.setText(tr("Can't find any ") + QString(e.what()) + tr(" plugin!"));
 			return msgBox.exec();
 		}
 
-		engine = aai->GetAudioPlugin();
-		playlistManager = new FooPlaylistManager(engine);
-		playerManager = new FooPlayerManager(playlistManager, engine);
+		engine = FooPluginManager::instance().getEngine();
+		playlistManager = new FooPlaylistManager(engine, this);
+		playerManager = new FooPlayerManager(playlistManager, engine, this);
 		mainWindow = new FooMainWindow(playlistManager, playerManager);
 
 		mainWindow->show();
 
 		return qApplication->exec();
 	}
-}
 
-void FooApplication::quitApp()
-{
+	void FooApplication::quitApp()
+	{
+	}
 }

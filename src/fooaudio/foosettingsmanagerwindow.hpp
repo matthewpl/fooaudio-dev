@@ -8,27 +8,29 @@
 #include <QPushButton>
 #include <QSpacerItem>
 
-class FooSettingsManagerWindow : public QSplitter
+namespace Fooaudio
 {
-	Q_OBJECT
+	class FooSettingsManagerWindow : public QSplitter
+	{
+		Q_OBJECT
 
-public:
-	explicit FooSettingsManagerWindow(QWidget *parent = 0);
+	public:
+		explicit FooSettingsManagerWindow(QWidget *parent = 0);
 
-private:
-	//QSplitter *splitter;
-	QTreeWidget *treeWidget;
-	QWidget *widget;
-	QGridLayout *layout;
-	QSpacerItem *spacer;
-	QPushButton *okButton;
-	QPushButton *cancelButton;
-	QPushButton *applyButton;
+	private:
+		QTreeWidget *treeWidget;
+		QWidget *widget;
+		QGridLayout *layout;
+		QSpacerItem *spacer;
+		QPushButton *okButton;
+		QPushButton *cancelButton;
+		QPushButton *applyButton;
 
-signals:
+	signals:
 
-public slots:
+	public slots:
 
-};
+	};
+}
 
 #endif // FOOSETTINGSMANAGERWINDOW_HPP

@@ -23,16 +23,19 @@
 
 #include <QtGui/QWidget>
 
-class FooAbout : public QWidget
+namespace Fooaudio
 {
-	Q_OBJECT
+	class FooAbout : public QWidget
+	{
+		Q_OBJECT
 
-	void keyPressEvent(QKeyEvent *);
+		void keyPressEvent(QKeyEvent *);
 
-public:
-	FooAbout(QWidget *parent = 0);
-	~FooAbout();
+	public:
+		FooAbout(QWidget *parent = 0);
+		~FooAbout();
 
-};
+	};
+}
 
 #endif

@@ -1,18 +1,21 @@
 #ifndef FOOPLAYBACKORDER_HPP
 #define FOOPLAYBACKORDER_HPP
 
-namespace FooPlaybackOrder
+namespace Fooaudio
 {
-	enum FooPlaybackOrder
+	namespace FooPlaybackOrder
 	{
-		Default,
-		Repeat_Playlist,
-		Repeat_Track,
-		Random,
-		Shuffle_Tracks,
-		Shuffle_Albums,
-		Shuffle_Folders
-	};
+		enum FooPlaybackOrder
+		{
+			Default,
+			Repeat_Playlist,
+			Repeat_Track,
+			Random,
+			Shuffle_Tracks,
+			Shuffle_Albums,
+			Shuffle_Folders
+		};
+	}
 }
 
 #endif // FOOPLAYBACKORDER_HPP

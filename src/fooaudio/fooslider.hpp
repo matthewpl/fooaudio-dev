@@ -23,26 +23,28 @@
 
 #include <QSlider>
 
-class FooSlider : public QSlider
+namespace Fooaudio
 {
-	Q_OBJECT
-public:
-	explicit FooSlider(QWidget *parent = 0);
-	explicit FooSlider(Qt::Orientation orientation, QWidget *parent = 0);
+	class FooSlider : public QSlider
+	{
+		Q_OBJECT
+	public:
+		explicit FooSlider(QWidget *parent = 0);
+		explicit FooSlider(Qt::Orientation orientation, QWidget *parent = 0);
 
-protected:
-	void mousePressEvent(QMouseEvent *ev);
-	void mouseReleaseEvent(QMouseEvent *ev);
+	protected:
+		void mousePressEvent(QMouseEvent *ev);
+		void mouseReleaseEvent(QMouseEvent *ev);
 
-private:
-	bool isChangeing;
+	private:
+		bool isChangeing;
 
-signals:
-	void valueChanged2(qint64);
+	signals:
+		void valueChanged2(qint64);
 
-public slots:
-	void valuesChanged(qint64 position, qint64 total);
-
-};
+	public slots:
+		void valuesChanged(qint64 position, qint64 total);
+	};
+}
 
 #endif // FOOSLIDER_HPP

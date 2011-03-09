@@ -27,101 +27,104 @@
 
 #include "footrackinfo.hpp"
 
-class FooTrack
+namespace Fooaudio
 {
-public:
-	FooTrack();
-	FooTrack(QUrl path);
+	class FooTrack
+	{
+	public:
+		FooTrack();
+		FooTrack(QUrl path);
 
-	QUrl file() const;
-	void setFile(QUrl path);
-	void setFile(QString path);
+		QUrl file() const;
+		void setFile(QUrl path);
+		void setFile(QString path);
 
-	QString title() const;
-	void setTitle(QString title);
+		QString title() const;
+		void setTitle(QString title);
 
-	QString version() const;
-	void version(QString version);
+		QString version() const;
+		void version(QString version);
 
-	QString album() const;
-	void setAlbum(QString album);
+		QString album() const;
+		void setAlbum(QString album);
 
-	QString trackNumber() const;
-	void setTrackNumber(QString trackNumber);
+		QString trackNumber() const;
+		void setTrackNumber(QString trackNumber);
 
-	QString artist() const;
-	void setArtist(QString artist);
+		QString artist() const;
+		void setArtist(QString artist);
 
-	QString performer() const;
-	void setPerformer(QString performer);
+		QString performer() const;
+		void setPerformer(QString performer);
 
-	QString copyright() const;
-	void setCopyright(QString copyright);
+		QString copyright() const;
+		void setCopyright(QString copyright);
 
-	QString license() const;
-	void setLicense(QString license);
+		QString license() const;
+		void setLicense(QString license);
 
-	QString organization() const;
-	void setOrganization(QString organization);
+		QString organization() const;
+		void setOrganization(QString organization);
 
-	QString description() const;
-	void setDescription(QString description);
+		QString description() const;
+		void setDescription(QString description);
 
-	QString genre() const;
-	void setGenre(QString genre);
+		QString genre() const;
+		void setGenre(QString genre);
 
-	QString date() const;
-	void setDate(QString date);
+		QString date() const;
+		void setDate(QString date);
 
-	QString location() const;
-	void setLocation(QString location);
+		QString location() const;
+		void setLocation(QString location);
 
-	QString contact() const;
-	void setContact(QString contact);
+		QString contact() const;
+		void setContact(QString contact);
 
-	QString isrc() const;
-	void setIsrc(QString isrc);
+		QString isrc() const;
+		void setIsrc(QString isrc);
 
-	int lenght() const;
-	void setLenght(int lenght);
+		int lenght() const;
+		void setLenght(int lenght);
 
-	QString lenghtInSeconds() const;
-	QString lenghtInMinutes() const;
+		QString lenghtInSeconds() const;
+		QString lenghtInMinutes() const;
 
-	bool operator== (const FooTrack &compare) const;
-	bool operator< (const FooTrack &compare) const;
-	bool operator!= (const FooTrack &compare) const;
+		bool operator== (const FooTrack &compare) const;
+		bool operator< (const FooTrack &compare) const;
+		bool operator!= (const FooTrack &compare) const;
 
-	int getMetaVersion() const;
-	void setMetaVersion(int i);
+		int getMetaVersion() const;
+		void setMetaVersion(int i);
 
-	QStringList getMeta() const;
-	void setMeta(QStringList meta);
+		QStringList getMeta() const;
+		void setMeta(QStringList meta);
 
-private:
-	QUrl m_path;
+	private:
+		QUrl m_path;
 
-	QString m_title;
-	QString m_version;
-	QString m_album;
-	QString m_trackNumber;
-	QString m_artist;
-	QString m_performer;
-	QString m_copyright;
-	QString m_license;
-	QString m_organization;
-	QString m_description;
-	QString m_genre;
-	QString m_date;
-	QString m_location;
-	QString m_contact;
-	QString m_isrc;
+		QString m_title;
+		QString m_version;
+		QString m_album;
+		QString m_trackNumber;
+		QString m_artist;
+		QString m_performer;
+		QString m_copyright;
+		QString m_license;
+		QString m_organization;
+		QString m_description;
+		QString m_genre;
+		QString m_date;
+		QString m_location;
+		QString m_contact;
+		QString m_isrc;
 
-	int m_lenght;
+		int m_lenght;
 
-	QStringList meta;
+		QStringList meta;
 
-	int metaVersion;
-};
+		int metaVersion;
+	};
+}
 
 #endif

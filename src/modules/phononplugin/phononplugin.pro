@@ -8,10 +8,10 @@ CONFIG += plugin
 
 HEADERS +=  phononengine.h \
 				phononplugin.h \
-				abstractaudioplugin.h \
-				abstractaudiointerface.h
+	 ../../fooaudio/footrack.hpp \
+	 ../../fooaudio/fooaudioengineplugin.hpp \
+	 ../../fooaudio/fooaudioengine.hpp
 
 SOURCES +=  phononengine.cpp \
 				phononplugin.cpp \
-				abstractaudioplugin.cpp
-
+	 ../../fooaudio/footrack.cpp

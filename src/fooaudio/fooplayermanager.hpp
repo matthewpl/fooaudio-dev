@@ -23,53 +23,60 @@
 
 #include <QObject>
 
-#include "abstractaudioplugin.h"
+#include "fooaudioengine.hpp"
 #include "fooplaylistmanager.hpp"
 #include "fooplaybackorder.hpp"
 
-class FooPlayerManager : public QObject
+namespace Fooaudio
 {
-Q_OBJECT
-public:
-	 explicit FooPlayerManager(FooPlaylistManager *playlistManager, FooAudio::AbstractAudioPlugin *engine, QObject *parent = 0);
-	 ~FooPlayerManager();
+	class FooPlayerManager : public QObject
+	{
+		Q_OBJECT
 
-	 qint64 getTotalTime();
-	 qint64 getCurrentTrackTime();
-	 bool isMuted();
-	 int getVolume();
-	 FooPlaybackOrder::FooPlaybackOrder getPlaybackOrder();
+	public:
+		explicit FooPlayerManager(FooPlaylistManager *playlistManager, FooAudioEngine *engine, QObject *parent = 0);
+		~FooPlayerManager();
 
-private:
-	 FooPlaylistManager *playlistManager;
-	 FooAudio::AbstractAudioPlugin *engine;
+		qint64 getTotalTime();
+		qint64 getCurrentTrackTime();
+		bool isMuted();
+		int getVolume();
+		FooPlaybackOrder::FooPlaybackOrder getPlaybackOrder();
 
-	 qint64 totalTrackTime;
-	 qint64 currentTrackTime;
-	 FooPlaybackOrder::FooPlaybackOrder playbackOrder;
+	private:
+		FooPlaylistManager *playlistManager;
+		FooAudioEngine *engine;
 
-signals:
-	 void enqueueNextTrack(QUrl);
-	 void muted(bool);
-	 void currentTrackTimeChanged(qint64 position, qint64 totalTime);
-	 void seek(qint64);
+		qint64 totalTrackTime;
+		qint64 currentTrackTime;
+		FooPlaybackOrder::FooPlaybackOrder playbackOrder;
+		bool m_mute;
+		int m_volume;
 
-public slots:
-	void next();
-	void previous();
-	void pause();
-	void play();
-	void stop();
-	void mute();
-	void random();
+	signals:
+		void enqueueNextTrack(QUrl);
+		void muted(bool);
+		void mute(bool);
+		void currentTrackTimeChanged(qint64 position, qint64 totalTime);
+		void seek(qint64);
 
-	void enqueueNextTrack();
+	public slots:
+		void next();
+		void previous();
+		void pause();
+		void play();
+		void stop();
+		void mute();
+		void random();
 
-	void setVolume(int);
+		void enqueueNextTrack();
 
-	void changeTotalTrackTime(qint64 t);
-	void changeCurrentTrackTime(qint64 t);
-	void changePlaybackOrder(FooPlaybackOrder::FooPlaybackOrder);
-};
+		void setVolume(int);
+
+		void changeTotalTrackTime(qint64 t);
+		void changeCurrentTrackTime(qint64 t);
+		void changePlaybackOrder(FooPlaybackOrder::FooPlaybackOrder);
+	};
+}
 
 #endif // FOOPLAYERMANAGER_HPP

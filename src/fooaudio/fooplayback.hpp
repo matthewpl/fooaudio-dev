@@ -1,16 +1,19 @@
 #ifndef FOOPLAYBACK_HPP
 #define FOOPLAYBACK_HPP
 
-namespace FooPlayback
+namespace Fooaudio
 {
-	enum FooPlayback
+	namespace FooPlayback
 	{
-		play,
-		next,
-		prev,
-		random,
-		enque
-	};
+		enum FooPlayback
+		{
+			play,
+			next,
+			prev,
+			random,
+			enque
+		};
+	}
 }
 
 #endif // FOOPLAYBACK_HPP

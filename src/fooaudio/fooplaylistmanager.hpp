@@ -21,7 +21,7 @@
 #ifndef FOOPLAYLISTMANAGER_HPP
 #define FOOPLAYLISTMANAGER_HPP
 
-#include "abstractaudioplugin.h"
+#include "fooaudioengine.hpp"
 #include "fooplaylist.hpp"
 #include "footrack.hpp"
 #include "fooplaybackorder.hpp"
@@ -30,48 +30,55 @@
 #include <QObject>
 #include <QUrl>
 
-class FooPlaylistManager : public QObject
+namespace Fooaudio
 {
-	Q_OBJECT
+	class FooPlaylistManager : public QObject
+	{
+		Q_OBJECT
 
-public:
-	FooPlaylistManager(FooAudio::AbstractAudioPlugin *engine, QObject *parent = 0);
-	~FooPlaylistManager();
+	public:
+		FooPlaylistManager(FooAudioEngine *engine, QObject *parent = 0);
+		~FooPlaylistManager();
 
-	void addFilesToCurrentPlaylist(QStringList);
-	QList<FooPlaylist *>* getPlaylists();
-	QUrl getNextTrack(FooPlaybackOrder::FooPlaybackOrder, FooPlayback::FooPlayback playback);
+		void addFilesToCurrentPlaylist(QStringList);
+		QList<FooPlaylist*>* getPlaylists();
+		QUrl getNextTrack(FooPlaybackOrder::FooPlaybackOrder, FooPlayback::FooPlayback playback);
 
-	void setPlaylistColumnConfig(QString newConfig);
-	QString getPlaylistColumnConfig();
+		void setPlaylistColumnConfig(QString newConfig);
+		QString getPlaylistColumnConfig();
 
-	void savePlaylistToPls(QString filePath);
-	void savePlaylistToM3u(QString filePath);
+		void savePlaylistToPls(QString filePath);
+		void savePlaylistToM3u(QString filePath);
 
-private:
-	FooAudio::AbstractAudioPlugin *engine;
+		void loadPlaylistFromPls(QString filePath);
 
-	QString playlistColumnConfig;
+	private:
+		FooAudioEngine *engine;
 
-	QList<FooPlaylist*>* playlists;
+		QString playlistColumnConfig;
 
-	FooPlaylist *currentPlaylist;
-	FooPlaylist *currentPlayingPlaylist;
+		QList<FooPlaylist*>* playlists;
 
-	//int metaVersion;
+		FooPlaylist *currentViewingtPlaylist;
+		FooPlaylist *currentPlayingPlaylist;
 
-	int playlistIndex(QString name, QUuid uuid) const;
+		//int metaVersion;
 
-signals:
-	void newPlaylistCreated(FooPlaylist *);
-	void playlistRemoved(QString, QUuid);
-	void playlistColumnConfigChanged(QString/*, int*/);
+		int playlistIndex(QString name, QUuid uuid) const;
 
-public slots:
-	void createPlaylist();
-	void changeCurrentPlaylist(FooPlaylist *);
-	void play(FooPlaylist *, QUrl);
-	void removePlaylist(QString, QUuid);
-};
+	signals:
+		void newPlaylistCreated(FooPlaylist *);
+		void playlistRemoved(QString, QUuid);
+		void playlistRenamed(QUuid uuid, QString oldName, QString newName);
+		void playlistColumnConfigChanged(QString/*, int*/);
+
+	public slots:
+		void createPlaylist();
+		void changeCurrentPlaylist(FooPlaylist *);
+		void play(FooPlaylist *, QUrl);
+		void removePlaylist(QString, QUuid);
+		void renamePlaylist(QUuid uuid, QString oldName, QString newName);
+	};
+}
 
 #endif // FOOPLAYLISTMANAGER_HPP

@@ -34,59 +34,63 @@
 #include "footrack.hpp"
 #include "footrackinfo.hpp"
 
-class FooPlaylist : public QObject
+namespace Fooaudio
 {
-	Q_OBJECT
-public:
-	explicit FooPlaylist(QString playlistName, QString metaConfig, /*int _metaVersion,*/ QObject *parent = 0);
+	class FooPlaylist : public QObject
+	{
+		Q_OBJECT
 
-	QString name() const;
-	void setName(const QString &name);
+	public:
+		explicit FooPlaylist(QString playlistName, QString metaConfig, /*int _metaVersion,*/ QObject *parent = 0);
 
-	QUuid uuid() const;
+		QString name() const;
+		void setName(const QString &name);
 
-	QString data(int row, int column);
-	QString header(int column) const;
+		QUuid uuid() const;
 
-	QStringList headers() const;
+		QString data(int row, int column);
+		QString header(int column) const;
 
-	int trackCount() const;
-	int columnCount() const;
+		QStringList headers() const;
 
-	void addTracks(QList<FooTrack>);
-	QUrl getNextTrack(FooPlaybackOrder::FooPlaybackOrder, FooPlayback::FooPlayback);
+		int trackCount() const;
+		int columnCount() const;
 
-	const FooTrack& getTrack(int index) const;
+		void addTracks(QList<FooTrack>);
+		QUrl getNextTrack(FooPlaybackOrder::FooPlaybackOrder, FooPlayback::FooPlayback);
 
-private:
-	QString playlistName;
-	QUuid playlistUuid;
+		const FooTrack& getTrack(int index) const;
 
-	QStringList playlistColumnsHeaders;
-	QString playlistColumnsConfig;
-	//int m_columnCount;
+	private:
+		QString playlistName;
+		QUuid playlistUuid;
 
-	QList<FooTrack> playlist;
-	int currentTrackIndex;
-	int shouldCurrentTrackIndex;
+		QStringList playlistColumnsHeaders;
+		QString playlistColumnsConfig;
+		//int m_columnCount;
 
-	int metaVersion;
+		QList<FooTrack> playlist;
+		int currentTrackIndex;
+		int shouldCurrentTrackIndex;
 
-	QUrl getRandomTrack();
+		int metaVersion;
 
-signals:
-	void play(FooPlaylist*, QUrl);
-	void currentChanged(FooPlaylist*);
-	void addedTracks(int);
-	void removedTrack(int);
-	void headersChanged();
-	void metaChanged(int);
+		QUrl getRandomTrack();
 
-public slots:
-	void play(QModelIndex);
-	void remove(QModelIndexList);
-	void currentChanged();
-	void playlistColumnConfigChanged(QString config/*, int v*/);
-};
+	signals:
+		void play(FooPlaylist*, QUrl);
+		void currentChanged(FooPlaylist*);
+		void addedTracks(int);
+		void removedTrack(int);
+		void headersChanged();
+		void metaChanged(int);
+
+	public slots:
+		void play(QModelIndex);
+		void remove(QModelIndexList);
+		void currentChanged();
+		void playlistColumnConfigChanged(QString config/*, int v*/);
+	};
+}
 
 #endif // FOOPLAYLIST_HPP

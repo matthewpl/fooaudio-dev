@@ -21,64 +21,69 @@
 #include "fooslider.hpp"
 
 #include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
 #include <QDebug>
 
-FooSlider::FooSlider(QWidget *parent) : QSlider(parent)
+namespace Fooaudio
 {
-	isChangeing = true;
-	setTracking(false);
-}
-
-FooSlider::FooSlider(Qt::Orientation orientation, QWidget *parent): QSlider(orientation, parent)
-{
-	isChangeing = true;
-	setTracking(false);
-}
-
-void FooSlider::mousePressEvent(QMouseEvent *event)
-{
-	isChangeing = false;
-
-	if (event->button() == Qt::LeftButton)
+	FooSlider::FooSlider(QWidget *parent) : QSlider(parent)
 	{
+		isChangeing = true;
+		setTracking(false);
+	}
+
+	FooSlider::FooSlider(Qt::Orientation orientation, QWidget *parent): QSlider(orientation, parent)
+	{
+		isChangeing = true;
+		setTracking(false);
+	}
+
+	void FooSlider::mousePressEvent(QMouseEvent *event)
+	{
+		isChangeing = false;
+
+		if (event->button() == Qt::LeftButton)
+		{
+			if (orientation() == Qt::Vertical)
+			{
+				setValue(minimum() + ((maximum()-minimum()) * (height()-event->y())) / height());
+			}
+			else
+			{
+				setValue(minimum() + ((maximum()-minimum()) * event->x()) / width());
+			}
+
+			event->accept();
+		}
+
+		QSlider::mousePressEvent(event);
+	}
+
+	void FooSlider::mouseReleaseEvent(QMouseEvent *event)
+	{
+		isChangeing = true;
 		if (orientation() == Qt::Vertical)
 		{
-			setValue(minimum() + ((maximum()-minimum()) * (height()-event->y())) / height());
+			emit valueChanged2(minimum() + ((maximum()-minimum()) * (height()-event->y())) / height());
 		}
 		else
 		{
-			setValue(minimum() + ((maximum()-minimum()) * event->x()) / width());
+			emit valueChanged2(minimum() + ((maximum()-minimum()) * event->x()) / width() ) ;
 		}
-
-		event->accept();
+		QSlider::mouseReleaseEvent(event);
 	}
 
-	QSlider::mousePressEvent(event);
-}
-
-void FooSlider::mouseReleaseEvent(QMouseEvent *event)
-{
-	isChangeing = true;
-	if (orientation() == Qt::Vertical)
+	void FooSlider::valuesChanged(qint64 position, qint64 total)
 	{
-		emit valueChanged2(minimum() + ((maximum()-minimum()) * (height()-event->y())) / height());
-	}
-	else
-	{
-		emit valueChanged2(minimum() + ((maximum()-minimum()) * event->x()) / width() ) ;
-	}
-	QSlider::mouseReleaseEvent(event);
-}
-
-void FooSlider::valuesChanged(qint64 position, qint64 total)
-{
-	if (isChangeing)
-	{
-		if (maximum() != total)
+		if (isChangeing)
 		{
-			setMaximum(total);
-		}
+			if (maximum() != total)
+			{
+				setMaximum(total);
+			}
 
-		setValue(position);
+			setValue(position);
+		}
 	}
 }

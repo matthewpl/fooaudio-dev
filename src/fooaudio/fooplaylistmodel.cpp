@@ -22,136 +22,138 @@
 
 #include <QDebug>
 
-FooPlaylistModel::FooPlaylistModel(FooPlaylist *playlist, QObject *parent) : QAbstractItemModel(parent)
+namespace Fooaudio
 {
-	this->playlist = playlist;
-	m_columnCount = columnCount();
-	m_rowCount = rowCount();
-}
-
-FooPlaylistModel::~FooPlaylistModel()
-{
-
-}
-
-QVariant FooPlaylistModel::data(const QModelIndex &index, int role) const
-{
-	if (!index.isValid())
+	FooPlaylistModel::FooPlaylistModel(FooPlaylist *playlist, QObject *parent) : QAbstractItemModel(parent)
 	{
+		this->playlist = playlist;
+		m_columnCount = columnCount();
+		m_rowCount = rowCount();
+	}
+
+	FooPlaylistModel::~FooPlaylistModel()
+	{
+
+	}
+
+	QVariant FooPlaylistModel::data(const QModelIndex &index, int role) const
+	{
+		if (!index.isValid())
+		{
+			return QVariant();
+		}
+
+		if (role != Qt::DisplayRole && role != Qt::EditRole)
+		{
+			return QVariant();
+		}
+
+		return playlist->data(index.row(), index.column());
+	}
+
+	QVariant FooPlaylistModel::headerData(int section, Qt::Orientation orientation, int role) const
+	{
+		if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+		{
+			return playlist->header(section);
+		}
+
 		return QVariant();
 	}
 
-	if (role != Qt::DisplayRole && role != Qt::EditRole)
+	QModelIndex FooPlaylistModel::index(int row, int column, const QModelIndex &parent) const
 	{
-		return QVariant();
+		return createIndex(row, column);
 	}
 
-	return playlist->data(index.row(), index.column());
-}
-
-QVariant FooPlaylistModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+	QModelIndex FooPlaylistModel::parent(const QModelIndex &index) const
 	{
-		return playlist->header(section);
+		return QModelIndex();
 	}
 
-	return QVariant();
-}
-
-QModelIndex FooPlaylistModel::index(int row, int column, const QModelIndex &parent) const
-{
-	return createIndex(row, column);
-}
-
-QModelIndex FooPlaylistModel::parent(const QModelIndex &index) const
-{
-	return QModelIndex();
-}
-
-int FooPlaylistModel::rowCount(const QModelIndex &parent) const
-{
-	return playlist->trackCount();
-}
-
-int FooPlaylistModel::columnCount(const QModelIndex &parent) const
-{
-	return playlist->columnCount();
-}
-
-Qt::ItemFlags FooPlaylistModel::flags(const QModelIndex &index) const
-{
-	if (index.isValid())
+	int FooPlaylistModel::rowCount(const QModelIndex &parent) const
 	{
-		qDebug() << "flagi";
-		return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+		return playlist->trackCount();
 	}
 
-	return 0;
-}
+	int FooPlaylistModel::columnCount(const QModelIndex &parent) const
+	{
+		return playlist->columnCount();
+	}
 
-bool FooPlaylistModel::insertColumns(int position, int columns, const QModelIndex &parent )
-{
-	beginInsertColumns(parent, position, position + columns - 1);
-	endInsertColumns();
+	Qt::ItemFlags FooPlaylistModel::flags(const QModelIndex &index) const
+	{
+		if (index.isValid())
+		{
+			return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+		}
 
-	return true;
-}
+		return 0;
+	}
 
-bool FooPlaylistModel::removeColumns(int position, int columns, const QModelIndex &parent)
-{
-	beginRemoveColumns(parent, position, position + columns - 1);
-	endRemoveColumns();
+	bool FooPlaylistModel::insertColumns(int position, int columns, const QModelIndex &parent )
+	{
+		beginInsertColumns(parent, position, position + columns - 1);
+		endInsertColumns();
 
-	return true;
-}
+		return true;
+	}
 
-bool FooPlaylistModel::insertRows(int position, int rows, const QModelIndex &parent)
-{
-	beginInsertRows(parent, position, position + rows - 1);
-	endInsertRows();
+	bool FooPlaylistModel::removeColumns(int position, int columns, const QModelIndex &parent)
+	{
+		beginRemoveColumns(parent, position, position + columns - 1);
+		endRemoveColumns();
 
-	m_rowCount = rowCount();
-	return true;
-}
+		return true;
+	}
 
-bool FooPlaylistModel::removeRows(int position, int rows, const QModelIndex &parent)
-{
-	beginRemoveRows(parent, position, position + rows - 1);
-	endRemoveRows();
+	bool FooPlaylistModel::insertRows(int position, int rows, const QModelIndex &parent)
+	{
+		beginInsertRows(parent, position, position + rows - 1);
+		endInsertRows();
 
-	m_rowCount = rowCount();
-	return true;
-}
+		m_rowCount = rowCount();
+		return true;
+	}
 
-void FooPlaylistModel::addTracks(int k)
-{
-	int row = m_rowCount;
-	insertRows(row, k);
+	bool FooPlaylistModel::removeRows(int position, int rows, const QModelIndex &parent)
+	{
+		beginRemoveRows(parent, position, position + rows - 1);
+		endRemoveRows();
 
-	emit dataChanged(index(row, 0), index(row + k, columnCount()));
-}
+		m_rowCount = rowCount();
+		return true;
+	}
 
-void FooPlaylistModel::removeTrack(int i)
-{
-	removeRow(i);
+	void FooPlaylistModel::addTracks(int k)
+	{
+		int row = m_rowCount;
+		insertRows(row, k);
 
-	emit dataChanged(index(i, 0), index(rowCount(), columnCount()));
-}
+		emit dataChanged(index(row, 0), index(row + k, columnCount()));
+	}
 
-void FooPlaylistModel::headersChanged()
-{
-	removeColumns(0, m_columnCount);
-	insertColumns(0, columnCount());
+	void FooPlaylistModel::removeTrack(int i)
+	{
+		removeRow(i);
 
-	m_columnCount = columnCount();
+		emit dataChanged(index(i, 0), index(rowCount(), columnCount()));
+	}
 
-	qDebug() << "columnCount" << m_columnCount;
-}
+	void FooPlaylistModel::headersChanged()
+	{
+		removeColumns(0, m_columnCount);
+		insertColumns(0, columnCount());
 
-void FooPlaylistModel::rowChanged(int row)
-{
-	qDebug() << "rowChanged" << row << columnCount();
+		m_columnCount = columnCount();
 
-	emit dataChanged(index(row, 0), index(row, columnCount()));
+		qDebug() << "columnCount" << m_columnCount;
+	}
+
+	void FooPlaylistModel::rowChanged(int row)
+	{
+		qDebug() << "rowChanged" << row << columnCount();
+
+		emit dataChanged(index(row, 0), index(row, columnCount()));
+	}
 }

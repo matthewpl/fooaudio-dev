@@ -18,60 +18,57 @@
  *
  ***********************************************************************/
 
-#ifndef PHONONENGINE_H__
-#define PHONONENGINE_H__
+#ifndef PHONONENGINE_HPP
+#define PHONONENGINE_HPP
 
-#include <abstractaudioplugin.h>
+#include <fooaudioengine.hpp>
 
 #include "footrackinfo.hpp"
 #include <QObject>
 #include <QUrl>
 
-namespace FooAudio
+class PhononEngine : public Fooaudio::FooAudioEngine
 {
-	class PhononEngine : public AbstractAudioPlugin
-	{
-		Q_OBJECT
+	Q_OBJECT
 
-	public:
-		PhononEngine(QObject *parent = 0);
-		~PhononEngine();
+public:
+	PhononEngine(QObject *parent = 0);
+	~PhononEngine();
 
-		bool isPlaying();
-		bool isStopped();
-		bool isPaused();
-		bool isMuted();
-		void setMuted(bool);
-		int getVolume();
+	bool isPlaying();
+	bool isStopped();
+	bool isPaused();
+	bool isMuted();
+	int getVolume();
 
-		QMap<FooTrackInfo::FooTrackInfo, QString> metaData(const QUrl url);
-		QString metaData(const FooTrackInfo::FooTrackInfo info, const QUrl url);
-		QStringList mimeTypes();
+	void metaData(Fooaudio::FooTrack& track);
+	QStringList mimeTypes();
 
-	signals:
-		void aboutToFinish();
-		void progress(const qint64 time);
-		void changeTotalTime(qint64 time);
-		void willPlayNow(const QUrl file);
-		void metaDataChanged(QMultiMap<FooTrackInfo::FooTrackInfo, QString> newMetaData, QUrl url);
+signals:
+	void aboutToFinish();
+	void progress(const qint64 time);
+	void changeTotalTime(qint64 time);
+	void willPlayNow(const QUrl file);
+	void metaDataChanged(QMultiMap<Fooaudio::FooTrackInfo::FooTrackInfo, QString> newMetaData, QUrl url);
+	void muteChanged(bool mute);
 
-	public slots:
-		void stop();
-		void play();
-		void pause();
-		void clearQueue();
-		void enqueueNextFile(const QUrl file);
-		void playFile(const QUrl file);
-		void setVolume(const int volume);
-		void seekTrack(qint64);
+public slots:
+	void stop();
+	void play();
+	void pause();
+	void clearQueue();
+	void enqueueNextFile(const QUrl file);
+	void playFile(const QUrl file);
+	void setVolume(const int volume);
+	void seekTrack(qint64);
+	void mute(bool mute);
 
-	private slots:
-		void newMetaData();
+private slots:
+	void newMetaData();
 
-	private:
-		class PhononEnginePrivate;
-		PhononEnginePrivate * d;
-	};
-}
+private:
+	class PhononEnginePrivate;
+	PhononEnginePrivate * d;
+};
 
-#endif // PHONONENGINE_H__
+#endif // PHONONENGINE_HPP

@@ -26,51 +26,56 @@
 #include <QString>
 #include <QUuid>
 
-class FooPlaylistWidget : public QTreeView
+namespace Fooaudio
 {
-	Q_OBJECT
+	class FooPlaylistWidget : public QTreeView
+	{
+		Q_OBJECT
 
-public:
-	FooPlaylistWidget (const QString& name, const QUuid& uuid,QWidget *parent = 0);
+	public:
+		FooPlaylistWidget (const QString& name, const QUuid& uuid,QWidget *parent = 0);
 
-	void changeToCurrent();
+		void changeToCurrent();
 
-	QString name() const;
-	QUuid uuid() const;
+		QString name() const;
+		void setName(QString newName);
 
-	QStringList Filters;
+		QUuid uuid() const;
 
-private:
-	QString playlistName;
-	QUuid playlistUuid;
+		QStringList Filters;
 
-protected:
-	void dropEvent(QDropEvent* event);
-	void dragEnterEvent(QDragEnterEvent*);
+	private:
+		QString playlistName;
+		QUuid playlistUuid;
 
-private slots:
-	void contextMenuRequested(const QPoint &position);
+	protected:
+		void dropEvent(QDropEvent* event);
+		void dragEnterEvent(QDragEnterEvent*);
 
-	void play();
-	void remove();
-	void crop();
-	void cut();
-	void copy();
-	void paste();
-	void addToPlaybackQueue();
-	void removeFromPlaybackQueue();
-	void properties();
+	private slots:
+		void contextMenuRequested(const QPoint &position);
 
-signals:
-	void currentChanged();
-	void play(QModelIndex);
-	void remove(QModelIndexList);
-	void crop(QModelIndexList);
-	void cut(QModelIndexList);
-	void copy(QModelIndexList);
-	void paste(QModelIndexList);
-	void addToPlaybackQueue(QModelIndexList);
-	void removeFromPlaybackQueue(QModelIndexList);
-};
+		void play();
+		void remove();
+		void crop();
+		void cut();
+		void copy();
+		void paste();
+		void addToPlaybackQueue();
+		void removeFromPlaybackQueue();
+		void properties();
+
+	signals:
+		void currentChanged();
+		void play(QModelIndex);
+		void remove(QModelIndexList);
+		void crop(QModelIndexList);
+		void cut(QModelIndexList);
+		void copy(QModelIndexList);
+		void paste(QModelIndexList);
+		void addToPlaybackQueue(QModelIndexList);
+		void removeFromPlaybackQueue(QModelIndexList);
+	};
+}
 
 #endif // _FOOPLAYLIST_HPP_

@@ -21,124 +21,140 @@
 #include "fooplayermanager.hpp"
 #include "fooplayback.hpp"
 
-FooPlayerManager::FooPlayerManager(FooPlaylistManager *playlistManager, FooAudio::AbstractAudioPlugin *engine, QObject *parent) : QObject(parent)
+#include <QDebug>
+
+namespace Fooaudio
 {
-	this->engine = engine;
-	this->playlistManager = playlistManager;
-
-	currentTrackTime = 0;
-	totalTrackTime = 0;
-	playbackOrder = FooPlaybackOrder::Default;
-
-	connect(engine, SIGNAL(aboutToFinish()), this, SLOT(enqueueNextTrack()));
-	connect(engine, SIGNAL(progress(qint64)), this, SLOT(changeCurrentTrackTime(qint64)));
-	connect(engine, SIGNAL(changeTotalTime(qint64)), this, SLOT(changeTotalTrackTime(qint64)));
-	connect(this, SIGNAL(enqueueNextTrack(QUrl)), engine, SLOT(enqueueNextFile(QUrl)));
-	connect(this, SIGNAL(seek(qint64)), engine, SIGNAL(seek(qint64)));
-}
-
-FooPlayerManager::~FooPlayerManager()
-{
-}
-
-int FooPlayerManager::getVolume()
-{
-	return engine->getVolume();
-}
-
-FooPlaybackOrder::FooPlaybackOrder FooPlayerManager::getPlaybackOrder()
-{
-	return playbackOrder;
-}
-
-void FooPlayerManager::changePlaybackOrder(FooPlaybackOrder::FooPlaybackOrder order)
-{
-	playbackOrder = order;
-}
-
-qint64 FooPlayerManager::getTotalTime()
-{
-	return totalTrackTime;
-}
-
-void FooPlayerManager::next()
-{
-	engine->playFile(playlistManager->getNextTrack(playbackOrder, FooPlayback::next));
-}
-
-void FooPlayerManager::previous()
-{
-	engine->playFile(playlistManager->getNextTrack(playbackOrder, FooPlayback::prev));
-}
-
-void FooPlayerManager::pause()
-{
-	if (engine->isPaused())
+	FooPlayerManager::FooPlayerManager(FooPlaylistManager *playlistManager, FooAudioEngine *engine, QObject *parent) : QObject(parent)
 	{
-		engine->play();
+		this->engine = engine;
+		this->playlistManager = playlistManager;
+
+		m_mute = false;
+
+		currentTrackTime = 0;
+		totalTrackTime = 0;
+		playbackOrder = FooPlaybackOrder::Default;
+
+		connect(engine, SIGNAL(aboutToFinish()), this, SLOT(enqueueNextTrack()));
+		connect(engine, SIGNAL(progress(qint64)), this, SLOT(changeCurrentTrackTime(qint64)));
+		connect(engine, SIGNAL(changeTotalTime(qint64)), this, SLOT(changeTotalTrackTime(qint64)));
+		connect(engine, SIGNAL(muteChanged(bool)), this, SIGNAL(muted(bool)));
+		connect(this, SIGNAL(mute(bool)), engine, SLOT(mute(bool)));
+		connect(this, SIGNAL(enqueueNextTrack(QUrl)), engine, SLOT(enqueueNextFile(QUrl)));
+		connect(this, SIGNAL(seek(qint64)), engine, SIGNAL(seek(qint64)));
 	}
-	else if (engine->isPlaying())
+
+	FooPlayerManager::~FooPlayerManager()
 	{
-		engine->pause();
 	}
-}
 
-void FooPlayerManager::play()
-{
-	if (engine->isPaused())
+	int FooPlayerManager::getVolume()
 	{
-		engine->play();
+		return engine->getVolume();
 	}
-	else if (!engine->isPlaying())
+
+	FooPlaybackOrder::FooPlaybackOrder FooPlayerManager::getPlaybackOrder()
 	{
-		engine->playFile(playlistManager->getNextTrack(playbackOrder, FooPlayback::play));
+		return playbackOrder;
 	}
-	else if (engine->isPlaying())
+
+	void FooPlayerManager::changePlaybackOrder(FooPlaybackOrder::FooPlaybackOrder order)
 	{
-		engine->seekTrack(0);
-		engine->play();
+		playbackOrder = order;
 	}
-}
 
-void FooPlayerManager::stop()
-{
-	engine->stop();
-}
+	qint64 FooPlayerManager::getTotalTime()
+	{
+		return totalTrackTime;
+	}
 
-void FooPlayerManager::mute()
-{
-	engine->setMuted(!engine->isMuted());
-	emit muted(!engine->isMuted());
-}
+	void FooPlayerManager::next()
+	{
+		engine->playFile(playlistManager->getNextTrack(playbackOrder, FooPlayback::next));
+	}
 
-bool FooPlayerManager::isMuted()
-{
-	return engine->isMuted();
-}
+	void FooPlayerManager::previous()
+	{
+		engine->playFile(playlistManager->getNextTrack(playbackOrder, FooPlayback::prev));
+	}
 
-void FooPlayerManager::random()
-{
-	engine->playFile(playlistManager->getNextTrack(FooPlaybackOrder::Random, FooPlayback::random));
-}
+	void FooPlayerManager::pause()
+	{
+		if (engine->isPaused())
+		{
+			engine->play();
+		}
+		else if (engine->isPlaying())
+		{
+			engine->pause();
+		}
+	}
 
-void FooPlayerManager::setVolume(int v)
-{
-	engine->setVolume(v);
-}
+	void FooPlayerManager::play()
+	{
+		if (engine->isPaused())
+		{
+			engine->play();
+		}
+		else if (!engine->isPlaying())
+		{
+			engine->playFile(playlistManager->getNextTrack(playbackOrder, FooPlayback::play));
+		}
+		else if (engine->isPlaying())
+		{
+			engine->seekTrack(0);
+			engine->play();
+		}
+	}
 
-void FooPlayerManager::enqueueNextTrack()
-{
-	emit enqueueNextTrack(playlistManager->getNextTrack(playbackOrder, FooPlayback::enque));
-}
+	void FooPlayerManager::stop()
+	{
+		engine->stop();
+	}
 
-void FooPlayerManager::changeCurrentTrackTime(qint64 t)
-{
-	currentTrackTime = t;
-	emit currentTrackTimeChanged(currentTrackTime, totalTrackTime);
-}
+	void FooPlayerManager::mute()
+	{
+		m_mute = !m_mute;
 
-void FooPlayerManager::changeTotalTrackTime(qint64 t)
-{
-	totalTrackTime = t;
-	emit currentTrackTimeChanged(currentTrackTime, totalTrackTime);
+		emit mute(m_mute);
+
+		if (!m_mute)
+		{
+			setVolume(m_volume);
+		}
+	}
+
+	bool FooPlayerManager::isMuted()
+	{
+		return m_mute;
+	}
+
+	void FooPlayerManager::random()
+	{
+		engine->playFile(playlistManager->getNextTrack(FooPlaybackOrder::Random, FooPlayback::random));
+	}
+
+	void FooPlayerManager::setVolume(int v)
+	{
+		m_volume = v;
+		engine->setVolume(v);
+	}
+
+	void FooPlayerManager::enqueueNextTrack()
+	{
+		emit enqueueNextTrack(playlistManager->getNextTrack(playbackOrder, FooPlayback::enque));
+	}
+
+	void FooPlayerManager::changeCurrentTrackTime(qint64 t)
+	{
+		currentTrackTime = t;
+		emit currentTrackTimeChanged(currentTrackTime, totalTrackTime);
+	}
+
+	void FooPlayerManager::changeTotalTrackTime(qint64 t)
+	{
+		totalTrackTime = t;
+		emit currentTrackTimeChanged(currentTrackTime, totalTrackTime);
+	}
 }

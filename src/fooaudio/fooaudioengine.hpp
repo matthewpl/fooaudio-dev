@@ -18,34 +18,33 @@
  *
  ***********************************************************************/
 
-#ifndef ABSTRACTAUDIOPLUGIN_HPP
-#define ABSTRACTAUDIOPLUGIN_HPP
+#ifndef FOOAUDIOENGINE_HPP
+#define FOOAUDIOENGINE_HPP
 
 #include <QObject>
 #include <QUrl>
 #include <QMultiMap>
 #include <QStringList>
 #include "footrackinfo.hpp"
+#include "footrack.hpp"
 
-namespace FooAudio
+namespace Fooaudio
 {
-	class AbstractAudioPlugin : public QObject
+	class FooAudioEngine : public QObject
 	{
 		Q_OBJECT
 
 	public:
-		AbstractAudioPlugin(QObject *parent = 0);
-		virtual ~AbstractAudioPlugin() {}
+		FooAudioEngine(QObject *parent = 0) {}
+		virtual ~FooAudioEngine() {}
 
 		virtual bool isPlaying() = 0;
 		virtual bool isStopped() = 0;
 		virtual bool isPaused() = 0;
 		virtual bool isMuted() = 0;
-		virtual void setMuted(bool) = 0;
 		virtual int getVolume() = 0;
 
-		virtual QMap<FooTrackInfo::FooTrackInfo, QString> metaData(const QUrl) = 0;
-		virtual QString metaData(const FooTrackInfo::FooTrackInfo, const QUrl) = 0;
+		virtual void metaData(FooTrack& track) = 0;
 		virtual QStringList mimeTypes() = 0;
 
 	signals:
@@ -55,6 +54,7 @@ namespace FooAudio
 		void willPlayNow(const QUrl file);
 		void seek(qint64);
 		void metaDataChanged(QMultiMap<FooTrackInfo::FooTrackInfo, QString> newMetaData, QUrl url);
+		void muteChanged(bool mute);
 
 	public slots:
 		virtual void stop() = 0;
@@ -65,7 +65,8 @@ namespace FooAudio
 		virtual void playFile(const QUrl file) = 0;
 		virtual void setVolume(const int volume) = 0;
 		virtual void seekTrack(qint64) = 0;
+		virtual void mute(bool mute) = 0;
 	};
 }
 
-#endif // ABSTRACTAUDIOPLUGIN_HPP
+#endif // FOOAUDIOENGINE_HPP

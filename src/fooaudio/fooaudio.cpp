@@ -18,13 +18,13 @@
  *
  ***********************************************************************/
 
-#include "fooapplication.h"
+#include "fooapplication.hpp"
 
 int main (int argc, char * argv [])
 {
 	Q_INIT_RESOURCE (resource);
 
-	FooApplication fooApp;
+	Fooaudio::FooApplication fooApp;
 
 	return fooApp.start(argc, argv);
 

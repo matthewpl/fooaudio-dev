@@ -23,282 +23,289 @@
 #include <QDebug>
 #include <QTime>
 
-FooPlaylist::FooPlaylist(QString name, QString metaConfig,/* int _metaVersion,*/ QObject *parent) : QObject(parent)
+namespace Fooaudio
 {
-	playlistName = name;
-	playlistUuid = QUuid::createUuid();
-	//m_columnCount = 0;
-	currentTrackIndex = -1;
-	shouldCurrentTrackIndex = -1;
-	playlistColumnConfigChanged(metaConfig/*, _metaVersion*/);
-}
-
-
-QString FooPlaylist::name() const
-{
-	return playlistName;
-}
-
-void FooPlaylist::setName(const QString &name)
-{
-	playlistName = name;
-}
-
-QString FooPlaylist::data(int row, int column)
-{
-	//if(metaVersion != playlist.at(row).getMetaVersion())
+	FooPlaylist::FooPlaylist(QString name, QString metaConfig,/* int _metaVersion,*/ QObject *parent) : QObject(parent)
 	{
-		QString meta = playlistColumnsConfig;
-
-		meta.replace("%pn", row == currentTrackIndex ? ">" : "");
-		meta.replace("%fp", playlist.at(row).file().toString());
-		meta.replace("%ti", playlist.at(row).title());
-		meta.replace("%al", playlist.at(row).album());
-		meta.replace("%tn", playlist.at(row).trackNumber());
-		meta.replace("%ar", playlist.at(row).artist());
-		meta.replace("%pe", tr("Performer"));
-		meta.replace("%cr", tr("Copyright"));
-		meta.replace("%li", tr("License"));
-		meta.replace("%or", tr("Organization"));
-		meta.replace("%ds", tr("Description"));
-		meta.replace("%ge", tr("Genre"));
-		meta.replace("%dt", playlist.at(row).date());
-		meta.replace("%lo", tr("Location"));
-		meta.replace("%ct", tr("Contact"));
-		meta.replace("%is", tr("ISRC"));
-		meta.replace("%cm", tr("Comment"));
-		meta.replace("%le", tr("Length"));
-		meta.replace("%br", tr("Bitrate"));
-		meta.replace("%sr", tr("Sample rate"));
-		meta.replace("%ch", tr("Channels"));
-
-		QStringList metaList(meta.split(";"));
-
-		playlist[row].setMeta(metaList);
-		playlist[row].setMetaVersion(metaVersion);
-
-		//qDebug() << "meta" << playlist.at(row).getMeta();
-
-		return playlist.at(row).getMeta().at(column);
+		playlistName = name;
+		playlistUuid = QUuid::createUuid();
+		//m_columnCount = 0;
+		currentTrackIndex = -1;
+		shouldCurrentTrackIndex = -1;
+		playlistColumnConfigChanged(metaConfig/*, _metaVersion*/);
 	}
-	/*else
+
+
+	QString FooPlaylist::name() const
+	{
+		return playlistName;
+	}
+
+	void FooPlaylist::setName(const QString &name)
+	{
+		playlistName = name;
+	}
+
+	QString FooPlaylist::data(int row, int column)
+	{
+		//if(metaVersion != playlist.at(row).getMetaVersion())
+		{
+			QString meta = playlistColumnsConfig;
+
+			meta.replace("%pn", row == currentTrackIndex ? ">" : "");
+			meta.replace("%fp", playlist.at(row).file().toString());
+			meta.replace("%ti", playlist.at(row).title());
+			meta.replace("%al", playlist.at(row).album());
+			meta.replace("%tn", playlist.at(row).trackNumber());
+			meta.replace("%ar", playlist.at(row).artist());
+			meta.replace("%pe", tr("Performer"));
+			meta.replace("%cr", tr("Copyright"));
+			meta.replace("%li", tr("License"));
+			meta.replace("%or", tr("Organization"));
+			meta.replace("%ds", tr("Description"));
+			meta.replace("%ge", tr("Genre"));
+			meta.replace("%dt", playlist.at(row).date());
+			meta.replace("%lo", tr("Location"));
+			meta.replace("%ct", tr("Contact"));
+			meta.replace("%is", tr("ISRC"));
+			meta.replace("%cm", tr("Comment"));
+			meta.replace("%le", tr("Length"));
+			meta.replace("%br", tr("Bitrate"));
+			meta.replace("%sr", tr("Sample rate"));
+			meta.replace("%ch", tr("Channels"));
+
+			QStringList metaList(meta.split(";"));
+
+			playlist[row].setMeta(metaList);
+			playlist[row].setMetaVersion(metaVersion);
+
+			//qDebug() << "meta" << playlist.at(row).getMeta();
+
+			return playlist.at(row).getMeta().at(column);
+		}
+		/*else
 	{
 		return playlist.at(row).getMeta().at(column);
 	}*/
-}
-
-QUuid FooPlaylist::uuid() const
-{
-	return playlistUuid;
-}
-
-void FooPlaylist::playlistColumnConfigChanged(QString config/*, int v*/)
-{
-	playlistColumnsConfig = config;
-	//metaVersion = v;
-
-	config.replace("%pn", tr("Playing now"));
-	config.replace("%fp", tr("Path"));
-	config.replace("%ti", tr("Title"));
-	config.replace("%al", tr("Album"));
-	config.replace("%tn", tr("Track"));
-	config.replace("%ar", tr("Artist"));
-	config.replace("%pe", tr("Performer"));
-	config.replace("%cr", tr("Copyright"));
-	config.replace("%li", tr("License"));
-	config.replace("%or", tr("Organization"));
-	config.replace("%ds", tr("Description"));
-	config.replace("%ge", tr("Genre"));
-	config.replace("%dt", tr("Date"));
-	config.replace("%lo", tr("Location"));
-	config.replace("%ct", tr("Contact"));
-	config.replace("%is", tr("ISRC"));
-	config.replace("%cm", tr("Comment"));
-	config.replace("%le", tr("Length"));
-	config.replace("%br", tr("Bitrate"));
-	config.replace("%sr", tr("Sample rate"));
-	config.replace("%ch", tr("Channels"));
-
-	playlistColumnsHeaders = config.split(";");
-}
-
-QString FooPlaylist::header(int column) const
-{
-	if (column > playlistColumnsHeaders.size())
-	{
-		return QString();
 	}
-	else
+
+	QUuid FooPlaylist::uuid() const
 	{
-		return playlistColumnsHeaders.at(column);
+		return playlistUuid;
 	}
-}
 
-int FooPlaylist::columnCount() const
-{
-	return 4;
-}
-
-int FooPlaylist::trackCount() const
-{
-	return playlist.size();
-}
-
-void FooPlaylist::remove(QModelIndexList indexList)
-{
-	int j = 0;
-
-	for (int i = indexList.size() - 1; i >= 0; --i)
+	void FooPlaylist::playlistColumnConfigChanged(QString config/*, int v*/)
 	{
-		if (indexList.at(i).row() == currentTrackIndex)
+		playlistColumnsConfig = config;
+		//metaVersion = v;
+
+		config.replace("%pn", tr("Playing now"));
+		config.replace("%fp", tr("Path"));
+		config.replace("%ti", tr("Title"));
+		config.replace("%al", tr("Album"));
+		config.replace("%tn", tr("Track"));
+		config.replace("%ar", tr("Artist"));
+		config.replace("%pe", tr("Performer"));
+		config.replace("%cr", tr("Copyright"));
+		config.replace("%li", tr("License"));
+		config.replace("%or", tr("Organization"));
+		config.replace("%ds", tr("Description"));
+		config.replace("%ge", tr("Genre"));
+		config.replace("%dt", tr("Date"));
+		config.replace("%lo", tr("Location"));
+		config.replace("%ct", tr("Contact"));
+		config.replace("%is", tr("ISRC"));
+		config.replace("%cm", tr("Comment"));
+		config.replace("%le", tr("Length"));
+		config.replace("%br", tr("Bitrate"));
+		config.replace("%sr", tr("Sample rate"));
+		config.replace("%ch", tr("Channels"));
+
+		playlistColumnsHeaders = config.split(";");
+	}
+
+	QString FooPlaylist::header(int column) const
+	{
+		if (column > playlistColumnsHeaders.size())
 		{
-			shouldCurrentTrackIndex = currentTrackIndex;
+			return QString();
 		}
-
-		if (j > 0 || indexList.at(i).row() <= currentTrackIndex)
+		else
 		{
-			j++;
+			return playlistColumnsHeaders.at(column);
 		}
-
-		playlist.removeAt(indexList.at(i).row());
-		emit removedTrack(indexList.at(i).row());
 	}
 
-	if (!(shouldCurrentTrackIndex < 0))
+	int FooPlaylist::columnCount() const
 	{
-		currentTrackIndex = -1;
-		shouldCurrentTrackIndex -= j;
-	}
-	else
-	{
-		currentTrackIndex -= j;
-	}
-}
-
-void FooPlaylist::currentChanged()
-{
-	emit currentChanged(this);
-}
-
-void FooPlaylist::addTracks(QList<FooTrack> tracks)
-{
-	playlist.append(tracks);
-
-	qDebug() << "size" << tracks.size();
-
-	emit addedTracks(tracks.size());
-}
-
-QUrl FooPlaylist::getRandomTrack()
-{
-	QTime midnight(0, 0, 0);
-	qsrand(midnight.secsTo(QTime::currentTime()));
-
-	currentTrackIndex = qrand() % playlist.size();
-
-	return playlist.at(currentTrackIndex).file();
-}
-
-void FooPlaylist::play(QModelIndex model)
-{
-	currentTrackIndex = model.row();
-	emit play(this, playlist.at(currentTrackIndex).file());
-}
-
-QUrl FooPlaylist::getNextTrack(FooPlaybackOrder::FooPlaybackOrder order, FooPlayback::FooPlayback playback)
-{
-	if (shouldCurrentTrackIndex >= 0)
-	{
-		currentTrackIndex = shouldCurrentTrackIndex;
-		shouldCurrentTrackIndex = -1;
+		return 4;
 	}
 
-	int beforeTrackIndex = currentTrackIndex;
-
-	QUrl newTrack;
-
-	if (playlist.empty())
+	int FooPlaylist::trackCount() const
 	{
-		currentTrackIndex = -1;
-		shouldCurrentTrackIndex = -1;
+		return playlist.size();
 	}
-	else if (order == FooPlaybackOrder::Random || playback == FooPlayback::random)
-	{
-		newTrack = getRandomTrack();
-	}
-	else if (currentTrackIndex < 0)
-	{
-		currentTrackIndex = 0;
 
-		newTrack = playlist.at(currentTrackIndex).file();
-	}
-	else
+	void FooPlaylist::remove(QModelIndexList indexList)
 	{
-		if ((playback == FooPlayback::enque && order == FooPlaybackOrder::Default) || (playback == FooPlayback::next && (order == FooPlaybackOrder::Default || order == FooPlaybackOrder::Repeat_Track)))
+		int j = 0;
+
+		for (int i = indexList.size() - 1; i >= 0; --i)
 		{
-			++currentTrackIndex;
-
-			if (currentTrackIndex >= playlist.size())
+			if (indexList.at(i).row() == currentTrackIndex)
 			{
-				currentTrackIndex = -1;
-			}
-			else
-			{
-				newTrack = playlist.at(currentTrackIndex).file();
-			}
-		}
-		else if (playback == FooPlayback::prev && (order == FooPlaybackOrder::Default || order == FooPlaybackOrder::Repeat_Track))
-		{
-			--currentTrackIndex;
-
-			if (currentTrackIndex < 0)
-			{
-				currentTrackIndex = -1;
-			}
-			else
-			{
-				newTrack = playlist.at(currentTrackIndex).file();
-			}
-		}
-		else if (order == FooPlaybackOrder::Repeat_Playlist && (playback == FooPlayback::enque || playback == FooPlayback::next))
-		{
-			++currentTrackIndex;
-
-			if (currentTrackIndex >= playlist.size())
-			{
-				currentTrackIndex = 0;
+				shouldCurrentTrackIndex = currentTrackIndex;
 			}
 
-			newTrack = playlist.at(currentTrackIndex).file();
-		}
-		else if (playback == FooPlayback::prev && order == FooPlaybackOrder::Repeat_Playlist)
-		{
-			--currentTrackIndex;
-
-			if (currentTrackIndex < 0)
+			if (j > 0 || indexList.at(i).row() <= currentTrackIndex)
 			{
-				currentTrackIndex = playlist.size() - 1;
+				j++;
 			}
 
-			newTrack = playlist.at(currentTrackIndex).file();
+			playlist.removeAt(indexList.at(i).row());
+			emit removedTrack(indexList.at(i).row());
 		}
-		else if ((playback == FooPlayback::enque && order == FooPlaybackOrder::Repeat_Track) || playback == FooPlayback::play)
+
+		if (!(shouldCurrentTrackIndex < 0))
 		{
-			newTrack = playlist.at(currentTrackIndex).file();
+			currentTrackIndex = -1;
+			shouldCurrentTrackIndex -= j;
+		}
+		else
+		{
+			currentTrackIndex -= j;
 		}
 	}
 
-	emit metaChanged(beforeTrackIndex);
-
-	if (currentTrackIndex >= 0)
+	void FooPlaylist::currentChanged()
 	{
+		emit currentChanged(this);
+	}
+
+	void FooPlaylist::addTracks(QList<FooTrack> tracks)
+	{
+		playlist.append(tracks);
+
+		qDebug() << "size" << tracks.size();
+
+		emit addedTracks(tracks.size());
+	}
+
+	QUrl FooPlaylist::getRandomTrack()
+	{
+		QTime midnight(0, 0, 0);
+		qsrand(midnight.secsTo(QTime::currentTime()));
+
+		currentTrackIndex = qrand() % playlist.size();
+
+		return playlist.at(currentTrackIndex).file();
+	}
+
+	void FooPlaylist::play(QModelIndex model)
+	{
+		int prevTrackIndex = currentTrackIndex;
+		currentTrackIndex = model.row();
+		emit play(this, playlist.at(currentTrackIndex).file());
+
+		emit metaChanged(prevTrackIndex);
 		emit metaChanged(currentTrackIndex);
 	}
 
-	return newTrack;
-}
+	QUrl FooPlaylist::getNextTrack(FooPlaybackOrder::FooPlaybackOrder order, FooPlayback::FooPlayback playback)
+	{
+		if (shouldCurrentTrackIndex >= 0)
+		{
+			currentTrackIndex = shouldCurrentTrackIndex;
+			shouldCurrentTrackIndex = -1;
+		}
 
-const FooTrack& FooPlaylist::getTrack(int index) const
-{
-	return playlist.at(index);
+		int beforeTrackIndex = currentTrackIndex;
+
+		QUrl newTrack;
+
+		if (playlist.empty())
+		{
+			currentTrackIndex = -1;
+			shouldCurrentTrackIndex = -1;
+		}
+		else if (order == FooPlaybackOrder::Random || playback == FooPlayback::random)
+		{
+			newTrack = getRandomTrack();
+		}
+		else if (currentTrackIndex < 0)
+		{
+			currentTrackIndex = 0;
+
+			newTrack = playlist.at(currentTrackIndex).file();
+		}
+		else
+		{
+			if ((playback == FooPlayback::enque && order == FooPlaybackOrder::Default) || (playback == FooPlayback::next && (order == FooPlaybackOrder::Default || order == FooPlaybackOrder::Repeat_Track)))
+			{
+				++currentTrackIndex;
+
+				if (currentTrackIndex >= playlist.size())
+				{
+					currentTrackIndex = -1;
+				}
+				else
+				{
+					newTrack = playlist.at(currentTrackIndex).file();
+				}
+			}
+			else if (playback == FooPlayback::prev && (order == FooPlaybackOrder::Default || order == FooPlaybackOrder::Repeat_Track))
+			{
+				--currentTrackIndex;
+
+				if (currentTrackIndex < 0)
+				{
+					currentTrackIndex = -1;
+				}
+				else
+				{
+					newTrack = playlist.at(currentTrackIndex).file();
+				}
+			}
+			else if (order == FooPlaybackOrder::Repeat_Playlist && (playback == FooPlayback::enque || playback == FooPlayback::next))
+			{
+				++currentTrackIndex;
+
+				if (currentTrackIndex >= playlist.size())
+				{
+					currentTrackIndex = 0;
+				}
+
+				newTrack = playlist.at(currentTrackIndex).file();
+			}
+			else if (playback == FooPlayback::prev && order == FooPlaybackOrder::Repeat_Playlist)
+			{
+				--currentTrackIndex;
+
+				if (currentTrackIndex < 0)
+				{
+					currentTrackIndex = playlist.size() - 1;
+				}
+
+				newTrack = playlist.at(currentTrackIndex).file();
+			}
+			else if ((playback == FooPlayback::enque && order == FooPlaybackOrder::Repeat_Track) || playback == FooPlayback::play)
+			{
+				newTrack = playlist.at(currentTrackIndex).file();
+			}
+		}
+
+		emit metaChanged(beforeTrackIndex);
+
+		if (currentTrackIndex >= 0)
+		{
+			emit metaChanged(currentTrackIndex);
+		}
+
+		return newTrack;
+	}
+
+	const FooTrack& FooPlaylist::getTrack(int index) const
+	{
+		return playlist.at(index);
+	}
 }

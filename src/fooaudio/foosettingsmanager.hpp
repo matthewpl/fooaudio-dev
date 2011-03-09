@@ -29,34 +29,37 @@
 
 #include "foosettingsmanagerwindow.hpp"
 
-class FooSettingsManager : public QObject
+namespace Fooaudio
 {
-	Q_OBJECT
-
-public:
-	static FooSettingsManager& instance()
+	class FooSettingsManager : public QObject
 	{
-		static FooSettingsManager fooSettingsManager;
-		return fooSettingsManager;
-	}
+		Q_OBJECT
 
-	void saveSettings(QString, QMap<QString, QVariant> &);
-	QMap<QString, QVariant> readSettings (QString);
+	public:
+		static FooSettingsManager& instance()
+		{
+			static FooSettingsManager settingsManager;
+			return settingsManager;
+		}
 
-private:
-	FooSettingsManager() {}
-	FooSettingsManager(const FooSettingsManager &);
-	FooSettingsManager& operator=(const FooSettingsManager&);
+		void saveSettings(QString, QMap<QString, QVariant> &);
+		QMap<QString, QVariant> readSettings (QString);
 
-	FooSettingsManagerWindow settingsManagerWindow;
+	private:
+		FooSettingsManager();
+		FooSettingsManager(const FooSettingsManager&);
+		FooSettingsManager& operator=(const FooSettingsManager&);
 
-	void saveSettings(const QMap<QString, QVariant> &, QSettings &);
-	void readSettings(QMap<QString, QVariant> &, QSettings &);
+		FooSettingsManagerWindow* settingsManagerWindow;
 
-signals:
+		void saveSettings(const QMap<QString, QVariant> &, QSettings &);
+		void readSettings(QMap<QString, QVariant> &, QSettings &);
 
-public slots:
-	void showWindow();
-};
+	signals:
+
+	public slots:
+		void showWindow();
+	};
+}
 
 #endif // FOOSETTINGSMANAGER_HPP

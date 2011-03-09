@@ -20,16 +20,16 @@
 
 #include <QtPlugin>
 
-#include "phononplugin.h"
-#include "phononengine.h"
+#include "fooaudioplaylistm3uformatplugin.hpp"
+#include "fooaudioplaylistm3uformat.hpp"
 
-PhononPlugin::PhononPlugin(QObject *parent) : QObject(parent)
+FooaudioPlaylistM3uFormatPlugin::FooaudioPlaylistM3uFormatPlugin(QObject *parent) : QObject(parent)
 {
 }
 
-Fooaudio::FooAudioEngine* PhononPlugin::getAudioEnginePlugin()
+Fooaudio::FooPlaylistFormat* FooaudioPlaylistM3uFormatPlugin::getPlaylistFormatPlugin()
 {
-	return new PhononEngine(this);
+	return new FooaudioPlaylistM3uFormat(this);
 }
 
-Q_EXPORT_PLUGIN2(PhononPlugin, PhononPlugin)
+Q_EXPORT_PLUGIN2(FooaudioPlaylistM3uFormatPlugin, FooaudioPlaylistM3uFormatPlugin)

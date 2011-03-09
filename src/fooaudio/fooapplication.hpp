@@ -18,18 +18,37 @@
  *
  ***********************************************************************/
 
-#include <QtPlugin>
+#ifndef FOOAPPLICATION_HPP
+#define FOOAPPLICATION_HPP
 
-#include "phononplugin.h"
-#include "phononengine.h"
+#include <QApplication>
 
-PhononPlugin::PhononPlugin(QObject *parent) : QObject(parent)
+#include "fooaudioengine.hpp"
+#include "fooplaylistmanager.hpp"
+#include "fooplayermanager.hpp"
+#include "foomainwindow.hpp"
+
+namespace Fooaudio
 {
+	class FooApplication : public QObject
+	{
+		Q_OBJECT
+	public:
+		FooApplication(QObject *parent = 0);
+		~FooApplication();
+		int start(int argc, char *argv[]);
+
+	private:
+		QApplication *qApplication;
+
+		FooAudioEngine *engine;
+		FooPlaylistManager *playlistManager;
+		FooPlayerManager *playerManager;
+		FooMainWindow *mainWindow;
+
+	public slots:
+		void quitApp();
+	};
 }
 
-Fooaudio::FooAudioEngine* PhononPlugin::getAudioEnginePlugin()
-{
-	return new PhononEngine(this);
-}
-
-Q_EXPORT_PLUGIN2(PhononPlugin, PhononPlugin)
+#endif // FOOAPPLICATION_HPP

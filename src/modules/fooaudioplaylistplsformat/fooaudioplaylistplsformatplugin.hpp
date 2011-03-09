@@ -18,24 +18,22 @@
  *
  ***********************************************************************/
 
-#ifndef ABSTRACTAUDIOINTERFACE_H__
-#define ABSTRACTAUDIOINTERFACE_H__
+#ifndef FOOAUDIOPLAYLISTPLSFORMATPLUGIN_HPP
+#define FOOAUDIOPLAYLISTPLSFORMATPLUGIN_HPP
+
+#include <fooplaylistformatplugin.hpp>
+#include <fooplaylistformat.hpp>
 
 #include <QObject>
-#include <QUrl>
 
-#include "abstractaudioplugin.h"
-
-namespace FooAudio
+class FooaudioPlaylistPlsFormatPlugin : public QObject, Fooaudio::FooPlaylistFormatPlugin
 {
-	class AbstractAudioInterface
-	{
-	public:
-		virtual ~AbstractAudioInterface() {}
-		virtual AbstractAudioPlugin* GetAudioPlugin() = 0;
-	};
-}
+	Q_OBJECT
+	Q_INTERFACES(Fooaudio::FooPlaylistFormatPlugin)
 
-Q_DECLARE_INTERFACE(FooAudio::AbstractAudioInterface, "org.fooaudio.AudioInterface/1.0");
+public:
+	explicit FooaudioPlaylistPlsFormatPlugin(QObject *parent = 0);
+	Fooaudio::FooPlaylistFormat* getPlaylistFormatPlugin();
+};
 
-#endif // ABSTRACTAUDIOINTERFACE_H__
+#endif // FOOAUDIOPLAYLISTPLSFORMATPLUGIN_HPP
